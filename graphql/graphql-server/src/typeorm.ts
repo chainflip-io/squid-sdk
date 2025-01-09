@@ -1,7 +1,6 @@
 import type {Logger} from '@subsquid/logger'
 import type {OpenreaderContext} from '@subsquid/openreader/lib/context'
 import {DbType} from '@subsquid/openreader/lib/db'
-import type {Dialect} from '@subsquid/openreader/lib/dialect'
 import type {Query} from '@subsquid/openreader/lib/sql/query'
 import {Subscription} from '@subsquid/openreader/lib/subscription'
 import {LazyTransaction} from '@subsquid/openreader/lib/util/lazy-transaction'

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@subsquid/openreader",
+      "comment": "add validation max errors",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@subsquid/openreader"
+}

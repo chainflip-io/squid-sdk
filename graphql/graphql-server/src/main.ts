@@ -27,12 +27,14 @@ runProgram(async () => {
     program.option('--dumb-cache-max-age <ms>', 'cache-control max-age in milliseconds', nat, 5000)
     program.option('--dumb-cache-ttl <ms>', 'in-memory cached item TTL in milliseconds', nat, 5000)
     program.option('--dumb-cache-size <mb>', 'max in-memory cache size in megabytes', nat, 50)
+    program.option('--validation-max-errors <count>', 'max validation errors', nat)
     program.addOption(new Option('--dialect <type>').choices(Object.values(Dialect)))
 
     let opts = program.parse().opts() as {
         maxRequestSize: number
         maxRootFields?: number
         maxResponseSize?: number
+        validationMaxErrors?: number
         squidStatus?: boolean
         sqlStatementTimeout?: number
         dumbCache?: "in-memory" | "redis"
