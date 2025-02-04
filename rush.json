@@ -124,7 +124,7 @@
    * LTS schedule: https://nodejs.org/en/about/releases/
    * LTS versions: https://nodejs.org/en/download/releases/
    */
-  "nodeSupportedVersionRange": ">=18.13.1 <21.0.0",
+  "nodeSupportedVersionRange": ">=18.0.0 <=24.0.0",
 
   /**
    * Odd-numbered major versions of Node.js are experimental.  Even-numbered releases
@@ -420,306 +420,14 @@
     //   // "versionPolicyName": ""
     // },
     {
-      "packageName": "@subsquid/evm-processor",
-      "projectFolder": "evm/evm-processor",
+      "packageName": "@subsquid/evm-stream",
+      "projectFolder": "evm/evm-stream",
       "shouldPublish": true,
       "versionPolicyName": "npm"
-    },
-    {
-      "packageName": "@subsquid/evm-codec",
-      "projectFolder": "evm/evm-codec",
-      "shouldPublish": true,
-      "versionPolicyName": "npm"
-    },
-    {
-      "packageName": "@subsquid/evm-abi",
-      "projectFolder": "evm/evm-abi",
-      "shouldPublish": true,
-      "versionPolicyName": "npm"
-    },
-    {
-      "packageName": "@subsquid/evm-typegen",
-      "projectFolder": "evm/evm-typegen",
-      "shouldPublish": true,
-      "versionPolicyName": "npm"
-    },
-    {
-      "packageName": "@subsquid/graphql-server",
-      "projectFolder": "graphql/graphql-server",
-      "shouldPublish": true,
-      "versionPolicyName": "npm"
-    },
-    {
-      "packageName": "@subsquid/ink-abi",
-      "projectFolder": "substrate/ink-abi",
-      "shouldPublish": true,
-      "versionPolicyName": "npm"
-    },
-    {
-      "packageName": "@subsquid/ink-typegen",
-      "projectFolder": "substrate/ink-typegen",
-      "shouldPublish": true,
-      "versionPolicyName": "npm"
-    },
-    {
-      "packageName": "@subsquid/openreader",
-      "projectFolder": "graphql/openreader",
-      "shouldPublish": true,
-      "versionPolicyName": "npm"
-    },
-    {
-      "packageName": "workspace",
-      "projectFolder": "ops/workspace",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "ops-xcm-typegen",
-      "projectFolder": "ops/xcm-typegen",
-      "shouldPublish": false
     },
     {
       "packageName": "@subsquid/batch-processor",
       "projectFolder": "processor/batch-processor",
-      "shouldPublish": true,
-      "versionPolicyName": "npm"
-    },
-    {
-      "packageName": "@subsquid/borsh",
-      "projectFolder": "solana/borsh",
-      "shouldPublish": true,
-      "versionPolicyName": "npm"
-    },
-    {
-      "packageName": "@subsquid/solana-dump",
-      "projectFolder": "solana/solana-dump",
-      "shouldPublish": true,
-      "versionPolicyName": "npm"
-    },
-    {
-      "packageName": "@subsquid/solana-ingest",
-      "projectFolder": "solana/solana-ingest",
-      "shouldPublish": true,
-      "versionPolicyName": "npm"
-    },
-    {
-      "packageName": "@subsquid/solana-normalization",
-      "projectFolder": "solana/solana-normalization",
-      "shouldPublish": true,
-      "versionPolicyName": "npm"
-    },
-    {
-      "packageName": "@subsquid/solana-objects",
-      "projectFolder": "solana/solana-objects",
-      "shouldPublish": true,
-      "versionPolicyName": "npm"
-    },
-    {
-      "packageName": "@subsquid/solana-rpc",
-      "projectFolder": "solana/solana-rpc",
-      "shouldPublish": true,
-      "versionPolicyName": "npm"
-    },
-    {
-      "packageName": "@subsquid/solana-rpc-data",
-      "projectFolder": "solana/solana-rpc-data",
-      "shouldPublish": true,
-      "versionPolicyName": "npm"
-    },
-    {
-      "packageName": "@subsquid/solana-stream",
-      "projectFolder": "solana/solana-stream",
-      "shouldPublish": true,
-      "versionPolicyName": "npm"
-    },
-    {
-      "packageName": "@subsquid/solana-typegen",
-      "projectFolder": "solana/solana-typegen",
-      "shouldPublish": true,
-      "versionPolicyName": "npm"
-    },
-    {
-      "packageName": "@subsquid/frontier",
-      "projectFolder": "substrate/frontier",
-      "shouldPublish": true,
-      "versionPolicyName": "npm"
-    },
-    {
-      "packageName": "@subsquid/scale-codec",
-      "projectFolder": "substrate/scale-codec",
-      "shouldPublish": true,
-      "versionPolicyName": "npm"
-    },
-    {
-      "packageName": "@subsquid/scale-type-system",
-      "projectFolder": "substrate/scale-type-system",
-      "shouldPublish": true,
-      "versionPolicyName": "npm"
-    },
-    {
-      "packageName": "@subsquid/ss58",
-      "projectFolder": "substrate/ss58",
-      "shouldPublish": true,
-      "versionPolicyName": "npm"
-    },
-    {
-      "packageName": "@subsquid/ss58-codec",
-      "projectFolder": "substrate/ss58-codec",
-      "shouldPublish": true,
-      "versionPolicyName": "npm"
-    },
-    {
-      "packageName": "@subsquid/substrate-data",
-      "projectFolder": "substrate/substrate-data",
-      "shouldPublish": true,
-      "versionPolicyName": "npm"
-    },
-    {
-      "packageName": "@subsquid/substrate-data-raw",
-      "projectFolder": "substrate/substrate-data-raw",
-      "shouldPublish": true,
-      "versionPolicyName": "npm"
-    },
-    {
-      "packageName": "@subsquid/substrate-dump",
-      "projectFolder": "substrate/substrate-dump",
-      "shouldPublish": true,
-      "versionPolicyName": "npm"
-    },
-    {
-      "packageName": "@subsquid/substrate-ingest",
-      "projectFolder": "substrate/substrate-ingest",
-      "shouldPublish": true,
-      "versionPolicyName": "npm"
-    },
-    {
-      "packageName": "@subsquid/substrate-runtime",
-      "projectFolder": "substrate/substrate-runtime",
-      "shouldPublish": true,
-      "versionPolicyName": "npm"
-    },
-    {
-      "packageName": "@subsquid/substrate-metadata-explorer",
-      "projectFolder": "substrate/substrate-metadata-explorer",
-      "shouldPublish": true,
-      "versionPolicyName": "npm"
-    },
-    {
-      "packageName": "@subsquid/substrate-metadata-service",
-      "projectFolder": "substrate/substrate-metadata-service",
-      "shouldPublish": true,
-      "versionPolicyName": "docker"
-    },
-    {
-      "packageName": "@subsquid/substrate-processor",
-      "projectFolder": "substrate/substrate-processor",
-      "shouldPublish": true,
-      "versionPolicyName": "npm"
-    },
-    {
-      "packageName": "@subsquid/substrate-typegen",
-      "projectFolder": "substrate/substrate-typegen",
-      "shouldPublish": true,
-      "versionPolicyName": "npm"
-    },
-    {
-      "packageName": "@subsquid/tron-data",
-      "projectFolder": "tron/tron-data",
-      "shouldPublish": true,
-      "versionPolicyName": "npm"
-    },
-    {
-      "packageName": "@subsquid/tron-dump",
-      "projectFolder": "tron/tron-dump",
-      "shouldPublish": true,
-      "versionPolicyName": "npm"
-    },
-    {
-      "packageName": "@subsquid/tron-ingest",
-      "projectFolder": "tron/tron-ingest",
-      "shouldPublish": true,
-      "versionPolicyName": "npm"
-    },
-    {
-      "packageName": "@subsquid/tron-normalization",
-      "projectFolder": "tron/tron-normalization",
-      "shouldPublish": true,
-      "versionPolicyName": "npm"
-    },
-    {
-      "packageName": "@subsquid/tron-processor",
-      "projectFolder": "tron/tron-processor",
-      "shouldPublish": true,
-      "versionPolicyName": "npm"
-    },
-    {
-      "packageName": "@subsquid/fuel-data",
-      "projectFolder": "fuel/fuel-data",
-      "shouldPublish": true,
-      "versionPolicyName": "npm"
-    },
-    {
-      "packageName": "@subsquid/fuel-objects",
-      "projectFolder": "fuel/fuel-objects",
-      "shouldPublish": true,
-      "versionPolicyName": "npm"
-    },
-    {
-      "packageName": "@subsquid/fuel-normalization",
-      "projectFolder": "fuel/fuel-normalization",
-      "shouldPublish": true,
-      "versionPolicyName": "npm"
-    },
-    {
-      "packageName": "@subsquid/fuel-dump",
-      "projectFolder": "fuel/fuel-dump",
-      "shouldPublish": true,
-      "versionPolicyName": "npm"
-    },
-    {
-      "packageName": "@subsquid/fuel-ingest",
-      "projectFolder": "fuel/fuel-ingest",
-      "shouldPublish": true,
-      "versionPolicyName": "npm"
-    },
-    {
-      "packageName": "@subsquid/fuel-stream",
-      "projectFolder": "fuel/fuel-stream",
-      "shouldPublish": true,
-      "versionPolicyName": "npm"
-    },
-    {
-      "packageName": "@subsquid/typeorm-codegen",
-      "projectFolder": "typeorm/typeorm-codegen",
-      "shouldPublish": true,
-      "versionPolicyName": "npm"
-    },
-    {
-      "packageName": "@subsquid/typeorm-config",
-      "projectFolder": "typeorm/typeorm-config",
-      "shouldPublish": true,
-      "versionPolicyName": "npm"
-    },
-    {
-      "packageName": "@subsquid/typeorm-migration",
-      "projectFolder": "typeorm/typeorm-migration",
-      "shouldPublish": true,
-      "versionPolicyName": "npm"
-    },
-    {
-      "packageName": "@subsquid/typeorm-store",
-      "projectFolder": "typeorm/typeorm-store",
-      "shouldPublish": true,
-      "versionPolicyName": "npm"
-    },
-    {
-      "packageName": "@subsquid/big-decimal",
-      "projectFolder": "util/big-decimal",
-      "shouldPublish": true,
-      "versionPolicyName": "npm"
-    },
-    {
-      "packageName": "@subsquid/commands",
-      "projectFolder": "util/commands",
       "shouldPublish": true,
       "versionPolicyName": "npm"
     },
@@ -736,11 +444,6 @@
       "versionPolicyName": "npm"
     },
     {
-      "packageName": "raw-archive-validator",
-      "projectFolder": "util/raw-archive-validator",
-      "shouldPublish": false
-    },
-    {
       "packageName": "@subsquid/rpc-client",
       "projectFolder": "util/rpc-client",
       "shouldPublish": true,
@@ -749,18 +452,6 @@
     {
       "packageName": "@subsquid/util-internal",
       "projectFolder": "util/util-internal",
-      "shouldPublish": true,
-      "versionPolicyName": "npm"
-    },
-    {
-      "packageName": "@subsquid/util-internal-archive-client",
-      "projectFolder": "util/util-internal-archive-client",
-      "shouldPublish": true,
-      "versionPolicyName": "npm"
-    },
-    {
-      "packageName": "@subsquid/util-internal-archive-layout",
-      "projectFolder": "util/util-internal-archive-layout",
       "shouldPublish": true,
       "versionPolicyName": "npm"
     },
@@ -791,12 +482,6 @@
     {
       "packageName": "@subsquid/util-internal-counters",
       "projectFolder": "util/util-internal-counters",
-      "shouldPublish": true,
-      "versionPolicyName": "npm"
-    },
-    {
-      "packageName": "@subsquid/util-internal-dump-cli",
-      "projectFolder": "util/util-internal-dump-cli",
       "shouldPublish": true,
       "versionPolicyName": "npm"
     },
@@ -897,6 +582,12 @@
       "versionPolicyName": "npm"
     },
     {
+      "packageName": "@subsquid/util-types",
+      "projectFolder": "util/util-types",
+      "shouldPublish": true,
+      "versionPolicyName": "npm"
+    },
+    {
       "packageName": "@subsquid/util-xxhash",
       "projectFolder": "util/util-xxhash",
       "shouldPublish": true,
@@ -909,53 +600,8 @@
       "versionPolicyName": "npm"
     },
     {
-      "packageName": "balances",
-      "projectFolder": "test/balances",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "borsh-bench",
-      "projectFolder": "test/borsh-bench",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "data-test",
-      "projectFolder": "test/data",
-      "shouldPublish": false
-    },
-    {
       "packageName": "erc20-transfers",
       "projectFolder": "test/erc20-transfers",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "gql-test-client",
-      "projectFolder": "test/gql-client",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "types-test",
-      "projectFolder": "test/types",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "shibuya-erc20",
-      "projectFolder": "test/shibuya-erc20",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "shibuya-psp22",
-      "projectFolder": "test/shibuya-psp22",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "solana-example",
-      "projectFolder": "test/solana-example",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "fuel-indexer",
-      "projectFolder": "test/fuel-indexer",
       "shouldPublish": false
     },
 //    {
@@ -968,44 +614,5 @@
 //      "projectFolder": "test/gear-nft",
 //      "shouldPublish": false
 //    },
-    {
-      "packageName": "astar-erc20",
-      "projectFolder": "test/astar-erc20",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "tron-usdt",
-      "projectFolder": "test/tron-usdt",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@subsquid/starknet-data",
-      "projectFolder": "starknet/starknet-data",
-      "shouldPublish": true,
-      "versionPolicyName": "npm"
-    },
-    {
-      "packageName": "@subsquid/starknet-objects",
-      "projectFolder": "starknet/starknet-objects",
-      "shouldPublish": true,
-      "versionPolicyName": "npm"
-    },
-    {
-      "packageName": "@subsquid/starknet-normalization",
-      "projectFolder": "starknet/starknet-normalization",
-      "shouldPublish": true,
-      "versionPolicyName": "npm"
-    },
-    {
-      "packageName": "@subsquid/starknet-stream",
-      "projectFolder": "starknet/starknet-stream",
-      "shouldPublish": true,
-      "versionPolicyName": "npm"
-    },
-    {
-      "packageName": "starknet-indexer",
-      "projectFolder": "test/starknet-indexer",
-      "shouldPublish": false
-    }
   ]
 }

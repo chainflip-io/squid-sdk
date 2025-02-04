@@ -1,8 +1,0 @@
-{
-    "outDir": "../gen/acala/src",
-    "specVersions": "../../data/chain/acala/versions.jsonl",
-    "events": true,
-    "calls": true,
-    "storage": true,
-    "constants": true
-}

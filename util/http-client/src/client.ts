@@ -1,17 +1,13 @@
 import type {Logger} from '@subsquid/logger'
-import {createLogger} from '@subsquid/logger'
 import {addErrorContext, ensureError, wait} from '@subsquid/util-internal'
-import type {Headers, RequestInit, Response} from 'node-fetch'
-import {AgentProvider, defaultAgentProvider} from './agent'
 import {HttpBody} from './body'
-import {nodeFetch} from './request'
+import {addStreamTimeout} from '@subsquid/util-timeout'
 
 
 export {HttpBody}
 
 
 export interface HttpClientOptions {
-    agent?: AgentProvider
     baseUrl?: string
     headers?: Record<string, string | number | bigint>
     /**
@@ -21,9 +17,13 @@ export interface HttpClientOptions {
      * Overall request processing time might be much larger due to retries.
      */
     httpTimeout?: number
+    bodyTimeout?: number
     retryAttempts?: number
     retrySchedule?: number[]
+    keepalive?: boolean
+
     log?: Logger | null
+    fetch?: (input: RequestInfo, init?: RequestInit) => Promise<Response>
 }
 
 
@@ -33,8 +33,10 @@ export interface RequestOptions {
     retryAttempts?: number
     retrySchedule?: number[]
     httpTimeout?: number
+    bodyTimeout?: number
     abort?: AbortSignal
     stream?: boolean
+    keepalive?: boolean
 }
 
 
@@ -51,6 +53,7 @@ export interface FetchRequest extends RequestInit {
     url: string
     headers: Headers
     timeout?: number
+    bodyTimeout?: number
     signal?: AbortSignal
     stream?: boolean
 }
@@ -63,20 +66,24 @@ export class HttpClient {
     protected log?: Logger
     protected headers?: Record<string, string | number | bigint>
     private baseUrl?: string
-    private agent: AgentProvider
     private retrySchedule: number[]
     private retryAttempts: number
     private httpTimeout: number
+    private bodyTimeout?: number
     private requestCounter = 0
+    private keepalive?: boolean
+    private fetch: (input: RequestInfo, init?: RequestInit) => Promise<Response>
 
     constructor(options: HttpClientOptions = {}) {
-        this.log = options.log === null ? undefined : options.log || createLogger('sqd:http-client')
+        this.log = options.log === null ? undefined : options.log
         this.headers = options.headers
         this.setBaseUrl(options.baseUrl)
-        this.agent = options.agent || defaultAgentProvider
         this.retrySchedule = options.retrySchedule || [10, 100, 500, 2000, 10000, 20000]
         this.retryAttempts = options.retryAttempts || 0
         this.httpTimeout = options.httpTimeout ?? 20000
+        this.bodyTimeout = options.bodyTimeout
+        this.keepalive = options.keepalive
+        this.fetch = options.fetch || fetch
     }
 
     get<T=any>(url: string, options?: RequestOptions): Promise<T> {
@@ -141,7 +148,8 @@ export class HttpClient {
             let info: any = {
                 httpRequestId: req.id,
                 httpRequestUrl: req.url,
-                httpRequestMethod: req.method
+                httpRequestMethod: req.method,
+                httpRequestBody: req.body,
             }
             if (reason instanceof Error) {
                 info.reason = reason.toString()
@@ -187,17 +195,16 @@ export class HttpClient {
         url: string,
         options: RequestOptions & HttpBody
     ): Promise<FetchRequest> {
-        await nodeFetch.load()
-
         let req: FetchRequest = {
             id: this.requestCounter++,
             method,
-            headers: new nodeFetch.Headers(options.headers),
+            headers: new Headers(options.headers),
             url: this.getAbsUrl(url),
             signal: options.abort,
-            compress: true,
             timeout: options.httpTimeout ?? this.httpTimeout,
-            stream: options.stream
+            bodyTimeout: options.bodyTimeout ?? this.bodyTimeout,
+            stream: options.stream,
+            keepalive: options.keepalive ?? this.keepalive,
         }
 
         this.handleBasicAuth(req)
@@ -210,8 +217,6 @@ export class HttpClient {
                 req.url += '?' + qs
             }
         }
-
-        req.agent = this.agent.getNativeAgent(req.url)
 
         if (options.content !== undefined) {
             if (typeof options.content == 'string') {
@@ -238,6 +243,9 @@ export class HttpClient {
                 req.headers.set(name, ''+this.headers[name])
             }
         }
+
+        // gzip is set by default
+        req.headers.set('accept-encoding', 'gzip')
 
         return req
     }
@@ -281,33 +289,38 @@ export class HttpClient {
             if (timer != null) {
                 clearTimeout(timer)
             }
-            if (req.signal && res?.stream) {
-                // FIXME: is `close` always emitted?
-                (res.body as NodeJS.ReadableStream).on('close', () => {
-                    req.signal!.removeEventListener('abort', abort)
-                })
-            } else {
-                req.signal?.removeEventListener('abort', abort)
-            }
+            // FIXME:
+            // if (req.signal && res?.stream) {
+            //     // FIXME: is `close` always emitted?
+            //     (res.body as NodeJS.ReadableStream).on('close', () => {
+            //         req.signal!.removeEventListener('abort', abort)
+            //     })
+            // } else {
+            // }
+            req.signal?.removeEventListener('abort', abort)
         }
     }
 
     private async performRequest(req: FetchRequest): Promise<HttpResponse> {
-        let res = await nodeFetch.request(req.url, req)
+        let res = await this.fetch(req.url, req)
         this.afterResponseHeaders(req, res.url, res.status, res.headers)
-        let httpResponse
-        if (req.stream && res.ok) {
-           httpResponse = new HttpResponse(req.id, res.url, res.status, res.headers, res.body, res.body != null)
-        } else {
-            let body = await this.handleResponseBody(req, res)
-            httpResponse = new HttpResponse(req.id, res.url, res.status, res.headers, body, false)
-        }
+        let body = await this.handleResponseBody(req, res)
+        let httpResponse = new HttpResponse(req.id, res.url, res.status, res.headers, body, body instanceof ReadableStream)
         this.afterResponse(req, httpResponse)
         return httpResponse
     }
 
     protected async handleResponseBody(req: FetchRequest, res: FetchResponse): Promise<any> {
         let contentType = (res.headers.get('content-type') || '').split(';')[0]
+
+        if (req.bodyTimeout != null && res.body != null) {
+            let body = addStreamTimeout(res.body, req.bodyTimeout, () => new HttpBodyTimeoutError(req.bodyTimeout!))
+            res = new Response(body, res)
+        }
+
+        if (req.stream && res.ok && res.body != null) {
+            return res.body
+        }
 
         if (contentType == 'application/json') {
             return res.json()
@@ -458,6 +471,17 @@ export class HttpTimeoutError extends Error {
 }
 
 
+export class HttpBodyTimeoutError extends Error {
+    constructor(ms: number) {
+        super(`request body timed out after ${ms} ms`)
+    }
+
+    get name(): string {
+        return 'HttpBodyTimeoutError'
+    }
+}
+
+
 export interface GraphqlMessage {
     message: string
     path?: (string | number)[]
@@ -475,12 +499,13 @@ export class GraphqlError extends Error {
 }
 
 
-export function isHttpConnectionError(err: unknown): boolean {
-    return nodeFetch.isLoaded
-        && err instanceof nodeFetch.FetchError
-        && err.type == 'system'
-        && (err.message.startsWith('request to') || err.code == 'ERR_STREAM_PREMATURE_CLOSE')
-}
+// export function isHttpConnectionError(err: unknown): boolean {
+//     return false
+    // nodeFetch.isLoaded
+    //     && err instanceof nodeFetch.FetchError
+    //     && err.type == 'system'
+    //     && (err.message.startsWith('request to') || err.code == 'ERR_STREAM_PREMATURE_CLOSE')
+// }
 
 
 export function asRetryAfterPause(res: HttpResponse | Error): number | undefined {
@@ -498,3 +523,27 @@ export function asRetryAfterPause(res: HttpResponse | Error): number | undefined
 }
 
 const HTTP_DATE_REGEX = /^(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun), (\d{2}) (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) (\d{4}) (\d{2}):(\d{2}):(\d{2}) GMT$/;
+
+// ref: https://github.com/sindresorhus/is-network-error/blob/main/index.js
+const errorMessages = new Set([
+	'network error', // Chrome
+	'Failed to fetch', // Chrome
+	'NetworkError when attempting to fetch resource.', // Firefox
+	'The Internet connection appears to be offline.', // Safari 16
+	'Load failed', // Safari 17+
+	'Network request failed', // `cross-fetch`
+	'fetch failed', // Undici (Node.js)
+	'terminated', // Undici (Node.js)
+]);
+
+export function isHttpConnectionError(error: unknown) {
+    if (error instanceof TypeError) {
+        if (error.message === 'Load failed') {
+            return error.stack === undefined;
+        }
+
+	    return errorMessages.has(error.message);
+    }
+    
+	return false
+}

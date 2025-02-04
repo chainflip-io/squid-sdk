@@ -1,8 +1,0 @@
-{
-  "outDir": "../gen/altair/src",
-  "specVersions": "../../data/chain/altair/versions.jsonl",
-  "events": true,
-  "calls": true,
-  "storage": true,
-  "constants": true
-}

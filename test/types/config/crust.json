@@ -1,8 +1,0 @@
-{
-  "outDir": "../gen/crust/src",
-  "specVersions": "../../data/chain/crust/versions.jsonl",
-  "events": true,
-  "calls": true,
-  "storage": true,
-  "constants": true
-}

@@ -1,4 +1,4 @@
-import {FetchRequest, FetchResponse, HttpAgent, HttpClient, HttpClientOptions} from '@subsquid/http-client'
+import {FetchRequest, FetchResponse, HttpClient, HttpClientOptions} from '@subsquid/http-client'
 import {Logger} from '@subsquid/logger'
 import {fixUnsafeIntegers} from '@subsquid/util-internal-json-fix-unsafe-integers'
 import {RpcProtocolError} from '../errors'
@@ -34,17 +34,12 @@ export interface HttpConnectionOptions {
 export class HttpConnection implements Connection {
     private url: string
     private log?: Logger
-    private agent: HttpAgent
     private http: RpcHttpClient
 
     constructor(options: HttpConnectionOptions) {
         this.url = options.url
         this.log = options.log
-        this.agent = new HttpAgent({
-            keepAlive: true
-        })
         this.http = new RpcHttpClient({
-            agent: this.agent,
             headers: options.headers,
         })
         this.http.fixUnsafeIntegers = options.fixUnsafeIntegers || false
@@ -54,7 +49,6 @@ export class HttpConnection implements Connection {
         if (err) {
             this.log?.error(err)
         }
-        this.agent.close()
     }
 
     connect(): Promise<void> {

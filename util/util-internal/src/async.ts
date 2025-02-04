@@ -1,6 +1,6 @@
-import assert from 'assert'
 import * as process from 'process'
-import {assertNotNull, ensureError} from './misc'
+import {assert, assertNotNull, ensureError} from './misc'
+
 
 
 export interface Future<T> {
@@ -109,6 +109,14 @@ export class AsyncQueue<T> {
 
     peek(): T | undefined {
         return this.buf[this.pos]
+    }
+
+    async wait(): Promise<void> {
+        if (this.closed) return
+        if (this.size < this.buf.length) return
+        assert(this.putFuture == null, 'concurrent puts and waits are not allowed')
+        this.putFuture = createFuture()
+        await this.putFuture.promise()
     }
 
     close(): void {

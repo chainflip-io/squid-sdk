@@ -1,4 +1,0 @@
-{
-  "chain": "wss://pioneer.api.onfinality.io/public-ws",
-  "archive": "https://pioneer.indexer.gc.subsquid.io/v4/graphql"
-}

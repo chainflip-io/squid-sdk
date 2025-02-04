@@ -1,4 +1,0 @@
-{
-  "chain": "wss://karura.api.onfinality.io/public-ws",
-  "archive": "https://karura.indexer.gc.subsquid.io/v4/graphql"
-}

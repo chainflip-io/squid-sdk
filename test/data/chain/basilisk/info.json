@@ -1,4 +1,0 @@
-{
-  "chain": "wss://basilisk.api.onfinality.io/public-ws",
-  "archive": "https://basilisk.indexer.gc.subsquid.io/v4/graphql"
-}

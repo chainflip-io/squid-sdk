@@ -1,4 +1,0 @@
-{
-  "chain": "wss://parallel-heiko.api.onfinality.io/public-ws",
-  "archive": "https://heiko.indexer.gc.subsquid.io/v4/graphql"
-}

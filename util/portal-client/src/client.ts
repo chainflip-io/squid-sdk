@@ -1,53 +1,23 @@
 import {HttpClient} from '@subsquid/http-client'
-import {createFuture, Future, unexpectedCase, wait, withErrorContext} from '@subsquid/util-internal'
-import {Readable} from 'stream'
-
-export interface PortalQuery {
-    fromBlock: number
-    toBlock?: number
-}
-
-export interface Block {
-    header: {
-        number: number
-        hash: string
-    }
-}
+import {
+    createFuture,
+    Future,
+    Simplify,
+    Throttler,
+    unexpectedCase,
+    wait,
+    withErrorContext,
+} from '@subsquid/util-internal'
 
 export interface PortalClientOptions {
-    /**
-     * The URL of the portal dataset.
-     */
     url: string
-
-    /**
-     * Optional custom HTTP client to use.
-     */
     http?: HttpClient
 
-    /**
-     * Minimum number of bytes to return.
-     */
     minBytes?: number
-
-    /**
-     * Maximum number of bytes to return.
-     */
     maxBytes?: number
-
-    /**
-     * Maximum time between stream data in milliseconds for return.
-     */
     maxIdleTime?: number
-
-    /**
-     * Maximum wait time in milliseconds for return.
-     */
     maxWaitTime?: number
 
-    /**
-     * Interval for polling the head in milliseconds.
-     */
     headPollInterval?: number
 }
 
@@ -73,14 +43,24 @@ export interface PortalStreamOptions {
     stopOnHead?: boolean
 }
 
-export interface HashAndHeight {
-    hash: string
-    height: number
+export type PortalStreamData<B> = {
+    finalizedHead?: HashAndNumber
+    blocks: B[]
 }
 
-export interface PortalStreamData<B extends Block> {
-    finalizedHead?: HashAndHeight
-    blocks: B[]
+export type PortalQuery = {
+    type: string & {}
+    fromBlock?: number
+    toBlock?: number
+}
+
+export type HashAndNumber = {
+    hash: string
+    number: number
+}
+
+export type PortalResponse = {
+    header: HashAndNumber
 }
 
 export class PortalClient {
@@ -96,7 +76,7 @@ export class PortalClient {
         this.url = new URL(options.url)
         this.client = options.http || new HttpClient()
         this.headPollInterval = options.headPollInterval ?? 5_000
-        this.minBytes = options.minBytes ?? 10 * 1024 * 1024
+        this.minBytes = options.minBytes ?? 40 * 1024 * 1024
         this.maxBytes = options.maxBytes ?? this.minBytes
         this.maxIdleTime = options.maxIdleTime ?? 300
         this.maxWaitTime = options.maxWaitTime ?? 5_000
@@ -118,10 +98,10 @@ export class PortalClient {
         return height
     }
 
-    getFinalizedQuery<B extends Block = Block, Q extends PortalQuery = PortalQuery>(
+    getFinalizedQuery<Q extends PortalQuery = PortalQuery, R extends PortalResponse = PortalResponse>(
         query: Q,
         options?: PortalRequestOptions
-    ): Promise<B[]> {
+    ): Promise<R[]> {
         // FIXME: is it needed or it is better to always use stream?
         return this.client
             .request<Buffer>('POST', this.getDatasetUrl(`finalized-stream`), {
@@ -134,8 +114,8 @@ export class PortalClient {
                 })
             )
             .then((res) => {
-                let blocks = res.body
-                    .toString('utf8')
+                let blocks = new TextDecoder('utf-8')
+                    .decode(res.body)
                     .trimEnd()
                     .split('\n')
                     .map((line) => JSON.parse(line))
@@ -143,10 +123,10 @@ export class PortalClient {
             })
     }
 
-    getFinalizedStream<B extends Block = Block, Q extends PortalQuery = PortalQuery>(
+    getFinalizedStream<Q extends PortalQuery = PortalQuery, R extends PortalResponse = PortalResponse>(
         query: Q,
         options?: PortalStreamOptions
-    ): ReadableStream<PortalStreamData<B>> {
+    ): ReadableStream<PortalStreamData<R>> {
         let {
             headPollInterval = this.headPollInterval,
             minBytes = this.minBytes,
@@ -157,7 +137,8 @@ export class PortalClient {
             stopOnHead = false,
         } = options ?? {}
 
-        return createReadablePortalStream<B>(
+        let top = new Throttler(() => this.getFinalizedHeight(request), 20_000)
+        return createReadablePortalStream(
             query,
             {
                 headPollInterval,
@@ -172,12 +153,12 @@ export class PortalClient {
                 // NOTE: we emulate the same behavior as will be implemented for hot blocks stream,
                 // but unfortunately we don't have any information about finalized block hash at the moment
                 let finalizedHead = {
-                    height: await this.getFinalizedHeight(o),
+                    number: await top.get(),
                     hash: '',
                 }
 
                 let res = await this.client
-                    .request<Readable>('POST', this.getDatasetUrl('finalized-stream'), {
+                    .request<ReadableStream<Buffer>>('POST', this.getDatasetUrl('finalized-stream'), {
                         ...o,
                         json: q,
                         stream: true,
@@ -190,11 +171,9 @@ export class PortalClient {
 
                 switch (res.status) {
                     case 200:
-                        let stream = Readable.toWeb(res.body) as ReadableStream<Uint8Array>
-
                         return {
                             finalizedHead,
-                            stream: stream
+                            stream: res.body
                                 .pipeThrough(new TextDecoderStream('utf8'))
                                 .pipeThrough(new LineSplitStream('\n')),
                         }
@@ -208,19 +187,19 @@ export class PortalClient {
     }
 }
 
-export function createReadablePortalStream<B extends Block>(
-    query: PortalQuery,
+function createReadablePortalStream<Q extends PortalQuery = PortalQuery, B extends PortalResponse = PortalResponse>(
+    query: Q,
     options: Required<PortalStreamOptions>,
     requestStream: (
-        query: PortalQuery,
+        query: Q,
         options?: PortalRequestOptions
-    ) => Promise<{finalizedHead: HashAndHeight; stream: ReadableStream<string[]>} | undefined>
+    ) => Promise<{finalizedHead: HashAndNumber; stream: ReadableStream<string[]>} | undefined>
 ): ReadableStream<PortalStreamData<B>> {
     let {headPollInterval, stopOnHead, request, ...bufferOptions} = options
 
     let abortStream = new AbortController()
 
-    let finalizedHead: HashAndHeight | undefined
+    let finalizedHead: HashAndNumber | undefined
     let buffer = new PortalStreamBuffer<B>(bufferOptions)
 
     async function ingest() {
@@ -316,7 +295,7 @@ export function createReadablePortalStream<B extends Block>(
     })
 }
 
-class PortalStreamBuffer<B extends Block> {
+class PortalStreamBuffer<B> {
     private buffer: {blocks: B[]; bytes: number} | undefined
     private state: 'open' | 'failed' | 'closed' = 'open'
     private error: unknown
@@ -373,10 +352,6 @@ class PortalStreamBuffer<B extends Block> {
     }
 
     async put(blocks: B[], bytes: number) {
-        if (this.state !== 'open') {
-            throw new Error('buffer is closed')
-        }
-
         this.lastChunkTimestamp = Date.now()
         if (this.idleInterval == null) {
             this.idleInterval = setInterval(() => {
@@ -398,11 +373,11 @@ class PortalStreamBuffer<B extends Block> {
         this.buffer.bytes += bytes
         this.buffer.blocks.push(...blocks)
 
-        this.putFuture.resolve()
-
         if (this.buffer.bytes >= this.minBytes) {
             this.readyFuture.resolve()
         }
+
+        this.putFuture.resolve()
 
         if (this.buffer.bytes >= this.maxBytes) {
             await this.takeFuture.promise()
