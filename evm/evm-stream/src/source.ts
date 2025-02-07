@@ -1,4 +1,4 @@
-import {applyRangeBound, getRequestAt, Range} from '@subsquid/util-internal-range'
+import {applyRangeBound, mergeRangeRequests, Range, RangeRequest} from '@subsquid/util-internal-range'
 import {PortalClient, PortalStreamData} from '@subsquid/portal-client'
 import {weakMemo} from '@subsquid/util-internal'
 import {array, BYTES, cast, NAT, object, STRING, taggedUnion, withDefault} from '@subsquid/util-internal-validation'
@@ -9,24 +9,26 @@ import {
     getLogProps,
     getTraceFrameValidator,
     project,
-} from './mapping/schema'
-import {BlockData, EvmQueryOptions, FieldSelection, Response} from './query'
-import {Bytes, Simplify} from '@subsquid/util-types'
+} from './schema'
+import {BlockData, DataRequest, EvmQueryOptions, FieldSelection, mergeDataRequests, Response} from './query'
+import {MergeSelection} from '@subsquid/util-types'
 
-export interface HashAndNumber {
-    hash: Bytes
+export interface BlockRef {
     number: number
+    hash: string
 }
 
-export type DataSourceStreamData<B> = {
-    finalizedHead?: HashAndNumber
-    blocks: (B & {[DataSource.blockRef]: HashAndNumber})[]
+export type DataSourceStreamItem<B> = B & {[DataSource.blockRef]: BlockRef}
+
+export type DataSourceStreamData<B> = DataSourceStreamItem<B>[] & {
+    [DataSource.finalizedHead]?: BlockRef
 }
 
 export type DataSourceStream<B> = ReadableStream<DataSourceStreamData<B>>
 
-export class DataSource<B> {
-    static readonly blockRef = Symbol('block ref')
+export namespace DataSource {
+    export const blockRef = Symbol('DataSource.blockRef')
+    export const finalizedHead = Symbol('DataSource.finalizedHead')
 }
 
 export interface DataSource<B> {
@@ -37,20 +39,24 @@ export interface DataSource<B> {
 
 export type GetDataSourceBlock<T> = T extends DataSource<infer B> ? B : never
 
-export interface EvmPortalDataSourceOptions<F extends FieldSelection> {
+export interface EvmPortalDataSourceOptions<Q extends EvmQueryOptions> {
     portal: string | PortalClient
-    query: EvmQueryOptions<F>
+    query: Q
 }
 
-export class EvmPortalDataSource<F extends FieldSelection, B extends BlockData<F> = BlockData<F>>
-    implements DataSource<B>
+export class EvmPortalDataSource<
+    Q extends EvmQueryOptions,
+    B extends BlockData<GetFields<Q['fields']>> = BlockData<GetFields<Q['fields']>>
+> implements DataSource<B>
 {
     private portal: PortalClient
-    private query: EvmQueryOptions<F>
+    private fields: Q['fields']
+    private requests: RangeRequest<DataRequest>[]
 
-    constructor(options: EvmPortalDataSourceOptions<F>) {
+    constructor(options: EvmPortalDataSourceOptions<Q>) {
         this.portal = typeof options.portal === 'string' ? new PortalClient({url: options.portal}) : options.portal
-        this.query = options.query
+        this.fields = options.query.fields
+        this.requests = mergeRangeRequests(options.query.requests, mergeDataRequests)
     }
 
     getHeight(): Promise<number> {
@@ -62,19 +68,24 @@ export class EvmPortalDataSource<F extends FieldSelection, B extends BlockData<F
     }
 
     getBlockStream(range?: Range, stopOnHead?: boolean): DataSourceStream<B> {
-        let requests = applyRangeBound(this.query.requests, range)
-        let fields = getFields(this.query.fields)
+        let fields = getFields(this.fields)
+        let requests = applyRangeBound(this.requests, range)
 
         let {writable, readable} = new TransformStream<PortalStreamData<Response<any>>, DataSourceStreamData<B>>({
-            transform: (data, controller) => {
-                controller.enqueue({
-                    finalizedHead: data.finalizedHead,
-                    blocks: data.blocks.map((b) => {
-                        let block = mapBlock(b, fields) as unknown as B & {[DataSource.blockRef]: HashAndNumber}
-                        block[DataSource.blockRef] = {hash: b.header.hash, number: b.header.number}
-                        return block
-                    }),
+            transform: async (data, controller) => {
+                let blocks = data.blocks.map((b) => {
+                    let block = mapBlock(b, fields) as any
+                    Object.defineProperty(block, DataSource.blockRef, {
+                        value: {hash: block.header.hash, number: block.header.number},
+                    })
+                    return block
                 })
+
+                Object.defineProperty(blocks, DataSource.finalizedHead, {
+                    value: data.finalizedHead,
+                })
+
+                controller.enqueue(blocks as DataSourceStreamData<B>)
             },
         })
 
@@ -146,7 +157,6 @@ export function mapBlock<F extends FieldSelection, B extends BlockData<F> = Bloc
     fields: F
 ): B {
     let validator = getBlockValidator(fields)
-
     let block = cast(validator, rawBlock)
 
     // let {number, hash, parentHash, ...hdr} = src.header
@@ -229,37 +239,38 @@ export function mapBlock<F extends FieldSelection, B extends BlockData<F> = Bloc
     return block as unknown as B
 }
 
-function getFields(fields?: FieldSelection): FieldSelection {
+function getFields<T extends FieldSelection>(fields: T): GetFields<T> {
     return {
-        block: {...fields?.block, ...ALWAYS_SELECTED_FIELDS.block},
-        transaction: {...fields?.transaction, ...ALWAYS_SELECTED_FIELDS.transaction},
-        log: {...fields?.log, ...ALWAYS_SELECTED_FIELDS.log},
-        trace: {...fields?.trace, ...ALWAYS_SELECTED_FIELDS.trace},
-        stateDiff: {...fields?.stateDiff, ...ALWAYS_SELECTED_FIELDS.stateDiff, kind: true},
-    }
+        ...fields,
+        block: {...fields?.block, ...REQUIRED_FIELDS.block},
+    } as any
 }
 
-const ALWAYS_SELECTED_FIELDS = {
+type GetFields<F extends FieldSelection> = MergeSelection<F, ReqiredFieldSelection>
+
+type ReqiredFieldSelection = typeof REQUIRED_FIELDS
+
+const REQUIRED_FIELDS = {
     block: {
         number: true,
         hash: true,
         parentHash: true,
     },
-    transaction: {
-        transactionIndex: true,
-    },
-    log: {
-        logIndex: true,
-        transactionIndex: true,
-    },
-    trace: {
-        transactionIndex: true,
-        traceAddress: true,
-        type: true,
-    },
-    stateDiff: {
-        transactionIndex: true,
-        address: true,
-        key: true,
-    },
-} as const
+    // transaction: {
+    //     transactionIndex: true,
+    // },
+    // log: {
+    //     logIndex: true,
+    //     transactionIndex: true,
+    // },
+    // trace: {
+    //     transactionIndex: true,
+    //     traceAddress: true,
+    //     type: true,
+    // },
+    // stateDiff: {
+    //     transactionIndex: true,
+    //     address: true,
+    //     key: true,
+    // },
+} as const satisfies FieldSelection

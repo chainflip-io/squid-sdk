@@ -1,7 +1,8 @@
 import {PortalClient} from '@subsquid/portal-client'
 import {HttpClient} from '@subsquid/http-client'
-import {EvmPortalDataSource} from '@subsquid/evm-stream'
-import {EvmQueryBuilder} from '@subsquid/evm-stream/lib/query'
+import {DataSource, EvmPortalDataSource} from '@subsquid/evm-stream'
+import {EvmQueryBuilder, mergeQueries} from '@subsquid/evm-stream/lib/query'
+import {erc20Query} from './erc20'
 
 async function main() {
     let portal = new PortalClient({
@@ -15,21 +16,14 @@ async function main() {
     let query = new EvmQueryBuilder()
         .setFields({
             block: {
-                number: true,
-                hash: true,
+                // number: true,
+                // hash: true,
+                // number: false,
             },
             transaction: {
                 from: true,
                 to: true,
                 hash: true,
-            },
-            log: {
-                address: true,
-                topics: true,
-                data: true,
-                transactionHash: true,
-                logIndex: true,
-                transactionIndex: true,
             },
             stateDiff: {
                 kind: true,
@@ -47,15 +41,68 @@ async function main() {
 
     let dataSource = new EvmPortalDataSource({
         portal,
-        query,
+        query: mergeQueries(
+            {
+                fields: {
+                    transaction: {
+                        gas: true,
+                    },
+                },
+                requests: [],
+            },
+            erc20Query({
+                fields: {
+                    transfer: {
+                        from: true,
+                        to: true,
+                        logIndex: true,
+                    },
+                },
+                requests: [
+                    {
+                        range: {from: 0},
+                        request: {
+                            transfers: [
+                                {
+                                    address: ['0x.....'],
+                                    transaction: true,
+                                },
+                            ],
+                        },
+                    },
+                ],
+            }),
+            erc20Query({
+                fields: {
+                    transfer: {
+                        from: true,
+                        to: true,
+                    },
+                },
+                requests: [
+                    {
+                        range: {from: 0},
+                        request: {
+                            transfers: [
+                                {
+                                    address: ['0x.....'],
+                                    transaction: true,
+                                },
+                            ],
+                        },
+                    },
+                ],
+            })
+        ),
     })
 
     let from = await dataSource.getFinalizedHeight().then((h) => h - 100_000)
 
-    for await (let {blocks, finalizedHead} of dataSource.getBlockStream({from}, true)) {
+    for await (let blocks of dataSource.getBlockStream({from}, true)) {
+        let a = blocks[0].header
         console.log(
             `[${new Date().toISOString()}] progress: ${blocks[blocks.length - 1].header.number} / ${
-                finalizedHead?.number ?? -1
+                blocks[DataSource.finalizedHead]?.number ?? -1
             }` + `, blocks: ${blocks.length}`
         )
     }

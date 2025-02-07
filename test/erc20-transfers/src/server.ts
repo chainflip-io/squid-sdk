@@ -1,7 +1,7 @@
 import fastify from 'fastify'
 import {PortalClient} from '@subsquid/portal-client'
 import {HttpClient} from '@subsquid/http-client'
-import {Erc20DataRequest, ERC20DataSource, Erc20FieldSelection} from './source'
+import {Erc20DataRequest, ERC20DataSource, Erc20FieldSelection} from './erc20'
 
 const portal = new PortalClient({
     url: 'https://portal.sqd.dev/datasets/arbitrum-one',

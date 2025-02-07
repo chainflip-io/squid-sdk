@@ -3,9 +3,7 @@ import {addErrorContext, ensureError, wait} from '@subsquid/util-internal'
 import {HttpBody} from './body'
 import {addStreamTimeout} from '@subsquid/util-timeout'
 
-
 export {HttpBody}
-
 
 export interface HttpClientOptions {
     baseUrl?: string
@@ -26,7 +24,6 @@ export interface HttpClientOptions {
     fetch?: (input: RequestInfo, init?: RequestInit) => Promise<Response>
 }
 
-
 export interface RequestOptions {
     query?: Record<string, string | number | bigint>
     headers?: HeadersInit
@@ -39,14 +36,12 @@ export interface RequestOptions {
     keepalive?: boolean
 }
 
-
 export interface GraphqlRequestOptions extends RequestOptions {
     variables?: Record<string, any>
     url?: string
     method?: 'GET' | 'POST'
     stream?: false
 }
-
 
 export interface FetchRequest extends RequestInit {
     id: number
@@ -58,9 +53,7 @@ export interface FetchRequest extends RequestInit {
     stream?: boolean
 }
 
-
 export type FetchResponse = Response
-
 
 export class HttpClient {
     protected log?: Logger
@@ -86,18 +79,18 @@ export class HttpClient {
         this.fetch = options.fetch || fetch
     }
 
-    get<T=any>(url: string, options?: RequestOptions): Promise<T> {
-        return this.request('GET', url, options).then(res => res.body)
+    get<T = any>(url: string, options?: RequestOptions): Promise<T> {
+        return this.request('GET', url, options).then((res) => res.body)
     }
 
-    post<T=any>(url: string, options?: RequestOptions & HttpBody): Promise<T> {
-        return this.request('POST', url, options).then(res => res.body)
+    post<T = any>(url: string, options?: RequestOptions & HttpBody): Promise<T> {
+        return this.request('POST', url, options).then((res) => res.body)
     }
 
-    async request<T=any>(
+    async request<T = any>(
         method: string,
         url: string,
-        options: RequestOptions & HttpBody = {},
+        options: RequestOptions & HttpBody = {}
     ): Promise<HttpResponse<T>> {
         let req = await this.prepareRequest(method, url, options)
 
@@ -113,9 +106,7 @@ export class HttpClient {
                 if (retryAttempts > retries && this.isRetryableError(res, req)) {
                     let pause = asRetryAfterPause(res)
                     if (pause == null) {
-                        pause = retrySchedule.length
-                        ? retrySchedule[Math.min(retries, retrySchedule.length - 1)]
-                        : 1000
+                        pause = retrySchedule.length ? retrySchedule[Math.min(retries, retrySchedule.length - 1)] : 1000
                     }
                     retries += 1
                     this.beforeRetryPause(req, res, pause)
@@ -133,13 +124,16 @@ export class HttpClient {
 
     protected beforeRequest(req: FetchRequest): void {
         if (this.log?.isDebug()) {
-            this.log.debug({
-                httpRequestId: req.id,
-                httpRequestUrl: req.url,
-                httpRequestMethod: req.method,
-                httpRequestHeaders: Array.from(req.headers),
-                httpRequestBody: req.body
-            }, 'http request')
+            this.log.debug(
+                {
+                    httpRequestId: req.id,
+                    httpRequestUrl: req.url,
+                    httpRequestMethod: req.method,
+                    httpRequestHeaders: Array.from(req.headers),
+                    httpRequestBody: req.body,
+                },
+                'http request'
+            )
         }
     }
 
@@ -166,12 +160,15 @@ export class HttpClient {
 
     protected afterResponseHeaders(req: FetchRequest, url: string, status: number, headers: Headers): void {
         if (this.log?.isDebug()) {
-            this.log.debug({
-                httpRequestId: req.id,
-                httpResponseUrl: url,
-                httpResponseStatus: status,
-                httpResponseHeaders: Array.from(headers)
-            }, 'http headers')
+            this.log.debug(
+                {
+                    httpRequestId: req.id,
+                    httpResponseUrl: url,
+                    httpResponseStatus: status,
+                    httpResponseHeaders: Array.from(headers),
+                },
+                'http headers'
+            )
         }
     }
 
@@ -183,10 +180,13 @@ export class HttpClient {
                     httpResponseBody = '...body is too long to be logged'
                 }
             }
-            this.log.debug({
-                httpRequestId: req.id,
-                httpResponseBody
-            }, 'http body')
+            this.log.debug(
+                {
+                    httpRequestId: req.id,
+                    httpResponseBody,
+                },
+                'http body'
+            )
         }
     }
 
@@ -224,10 +224,8 @@ export class HttpClient {
                 if (!req.headers.has('content-type')) {
                     req.headers.set('content-type', 'text/plain')
                 }
-            } else if (Buffer.isBuffer(options.content)) {
-                req.body = options.content
             } else {
-                req.body = Buffer.from(options.content.buffer, options.content.byteOffset, options.content.byteLength)
+                req.body = options.content
             }
         }
 
@@ -240,12 +238,9 @@ export class HttpClient {
 
         for (let name in this.headers) {
             if (!req.headers.has(name)) {
-                req.headers.set(name, ''+this.headers[name])
+                req.headers.set(name, '' + this.headers[name])
             }
         }
-
-        // gzip is set by default
-        req.headers.set('accept-encoding', 'gzip')
 
         return req
     }
@@ -278,25 +273,15 @@ export class HttpClient {
 
         let res: HttpResponse | undefined
         try {
-            return res = await this.performRequest({...req, signal: ac.signal})
-        } catch(err: any) {
+            return (res = await this.performRequest({...req, signal: ac.signal}))
+        } catch (err: any) {
             if (timer == null) {
                 throw new HttpTimeoutError(req.timeout)
             } else {
                 throw err
             }
         } finally {
-            if (timer != null) {
-                clearTimeout(timer)
-            }
-            // FIXME:
-            // if (req.signal && res?.stream) {
-            //     // FIXME: is `close` always emitted?
-            //     (res.body as NodeJS.ReadableStream).on('close', () => {
-            //         req.signal!.removeEventListener('abort', abort)
-            //     })
-            // } else {
-            // }
+            clearTimeout(timer)
             req.signal?.removeEventListener('abort', abort)
         }
     }
@@ -305,7 +290,14 @@ export class HttpClient {
         let res = await this.fetch(req.url, req)
         this.afterResponseHeaders(req, res.url, res.status, res.headers)
         let body = await this.handleResponseBody(req, res)
-        let httpResponse = new HttpResponse(req.id, res.url, res.status, res.headers, body, body instanceof ReadableStream)
+        let httpResponse = new HttpResponse(
+            req.id,
+            res.url,
+            res.status,
+            res.headers,
+            body,
+            body instanceof ReadableStream
+        )
         this.afterResponse(req, httpResponse)
         return httpResponse
     }
@@ -332,7 +324,7 @@ export class HttpClient {
 
         let arrayBuffer = await res.arrayBuffer()
         if (arrayBuffer.byteLength == 0) return undefined
-        return Buffer.from(arrayBuffer)
+        return arrayBuffer
     }
 
     isRetryableError(error: HttpResponse | Error, req?: FetchRequest): boolean {
@@ -342,7 +334,7 @@ export class HttpClient {
             error = error.response
         }
         if (error instanceof HttpResponse) {
-            switch(error.status) {
+            switch (error.status) {
                 case 429:
                 case 502:
                 case 503:
@@ -356,7 +348,7 @@ export class HttpClient {
         return false
     }
 
-    private getRequestUrlAndAuth(url: string): {url: string, basic?: string} {
+    private getRequestUrlAndAuth(url: string): {url: string; basic?: string} {
         let u = new URL(this.getAbsUrl(url))
         if (u.username || u.password) {
             let basic = btoa(u.username + ':' + u.password)
@@ -391,7 +383,7 @@ export class HttpClient {
         }
     }
 
-    async graphqlRequest<T=any>(gql: string, options: GraphqlRequestOptions = {}): Promise<T> {
+    async graphqlRequest<T = any>(gql: string, options: GraphqlRequestOptions = {}): Promise<T> {
         let {method = 'POST', url = '/', variables, ...reqOptions} = options
         let req: RequestOptions & {json?: any} = reqOptions
         if (method == 'GET') {
@@ -405,10 +397,10 @@ export class HttpClient {
         } else {
             req.json = {
                 query: gql,
-                variables
+                variables,
             }
         }
-        let res = await this.request<{data: T, errors?: GraphqlMessage[]}>(method, url, req)
+        let res = await this.request<{data: T; errors?: GraphqlMessage[]}>(method, url, req)
         if (res.body.errors?.length) {
             throw new GraphqlError(res.body.errors)
         } else {
@@ -417,8 +409,7 @@ export class HttpClient {
     }
 }
 
-
-export class HttpResponse<T=any> {
+export class HttpResponse<T = any> {
     constructor(
         public readonly requestId: number,
         public readonly url: string,
@@ -426,8 +417,7 @@ export class HttpResponse<T=any> {
         public readonly headers: Headers,
         public readonly body: T,
         public readonly stream: boolean
-    ) {
-    }
+    ) {}
 
     get ok(): boolean {
         return this.status >= 200 && this.status < 300
@@ -443,11 +433,10 @@ export class HttpResponse<T=any> {
             status: this.status,
             headers: Array.from(this.headers),
             body: this.stream ? undefined : this.body,
-            url: this.url
+            url: this.url,
         }
     }
 }
-
 
 export class HttpError extends Error {
     constructor(public readonly response: HttpResponse) {
@@ -459,7 +448,6 @@ export class HttpError extends Error {
     }
 }
 
-
 export class HttpTimeoutError extends Error {
     constructor(public readonly ms: number) {
         super(`request timed out after ${ms} ms`)
@@ -469,7 +457,6 @@ export class HttpTimeoutError extends Error {
         return 'HttpTimeoutError'
     }
 }
-
 
 export class HttpBodyTimeoutError extends Error {
     constructor(ms: number) {
@@ -481,12 +468,10 @@ export class HttpBodyTimeoutError extends Error {
     }
 }
 
-
 export interface GraphqlMessage {
     message: string
     path?: (string | number)[]
 }
-
 
 export class GraphqlError extends Error {
     constructor(public readonly messages: GraphqlMessage[]) {
@@ -498,15 +483,13 @@ export class GraphqlError extends Error {
     }
 }
 
-
 // export function isHttpConnectionError(err: unknown): boolean {
 //     return false
-    // nodeFetch.isLoaded
-    //     && err instanceof nodeFetch.FetchError
-    //     && err.type == 'system'
-    //     && (err.message.startsWith('request to') || err.code == 'ERR_STREAM_PREMATURE_CLOSE')
+// nodeFetch.isLoaded
+//     && err instanceof nodeFetch.FetchError
+//     && err.type == 'system'
+//     && (err.message.startsWith('request to') || err.code == 'ERR_STREAM_PREMATURE_CLOSE')
 // }
-
 
 export function asRetryAfterPause(res: HttpResponse | Error): number | undefined {
     if (res instanceof HttpError) {
@@ -522,28 +505,29 @@ export function asRetryAfterPause(res: HttpResponse | Error): number | undefined
     return undefined
 }
 
-const HTTP_DATE_REGEX = /^(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun), (\d{2}) (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) (\d{4}) (\d{2}):(\d{2}):(\d{2}) GMT$/;
+const HTTP_DATE_REGEX =
+    /^(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun), (\d{2}) (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) (\d{4}) (\d{2}):(\d{2}):(\d{2}) GMT$/
 
 // ref: https://github.com/sindresorhus/is-network-error/blob/main/index.js
 const errorMessages = new Set([
-	'network error', // Chrome
-	'Failed to fetch', // Chrome
-	'NetworkError when attempting to fetch resource.', // Firefox
-	'The Internet connection appears to be offline.', // Safari 16
-	'Load failed', // Safari 17+
-	'Network request failed', // `cross-fetch`
-	'fetch failed', // Undici (Node.js)
-	'terminated', // Undici (Node.js)
-]);
+    'network error', // Chrome
+    'Failed to fetch', // Chrome
+    'NetworkError when attempting to fetch resource.', // Firefox
+    'The Internet connection appears to be offline.', // Safari 16
+    'Load failed', // Safari 17+
+    'Network request failed', // `cross-fetch`
+    'fetch failed', // Undici (Node.js)
+    'terminated', // Undici (Node.js)
+])
 
 export function isHttpConnectionError(error: unknown) {
     if (error instanceof TypeError) {
         if (error.message === 'Load failed') {
-            return error.stack === undefined;
+            return error.stack === undefined
         }
 
-	    return errorMessages.has(error.message);
+        return errorMessages.has(error.message)
     }
-    
-	return false
+
+    return false
 }

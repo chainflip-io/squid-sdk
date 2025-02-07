@@ -4,12 +4,13 @@ import type {
     Bytes20,
     Bytes32,
     Bytes8,
-    ExcludeUndefined,
-    RemoveEmptyObjects,
+    ConditionalOmit,
+    EmptyObject,
     RemoveKeysPrefix,
     Select,
     Selector,
     Simplify,
+    Trues,
 } from '@subsquid/util-types'
 
 export type BlockHeaderFields = {
@@ -179,8 +180,6 @@ export type StateDiffDeleteFields = StateDiffBaseFields & {
     next?: null
 }
 
-type Trues<T> = {[K in keyof T]-?: true}
-
 export type BlockHeaderFieldSelection = Simplify<Selector<keyof BlockHeaderFields>>
 export type BlockHeader<T extends BlockHeaderFieldSelection = Trues<BlockHeaderFieldSelection>> = Simplify<
     Select<BlockHeaderFields, T>
@@ -229,19 +228,21 @@ export type TraceRewardAction<F extends TraceFieldSelection = Trues<TraceFieldSe
 >
 
 export type TraceCreate<F extends TraceFieldSelection = Trues<TraceFieldSelection>> = Simplify<
-    Select<TraceCreateFields, F> & RemoveEmptyObjects<{action: TraceCreateAction<F>; result?: TraceCreateResult<F>}>
+    Select<TraceCreateFields, F> &
+        ConditionalOmit<{action: TraceCreateAction<F>; result?: TraceCreateResult<F>}, EmptyObject | undefined>
 >
 
 export type TraceCall<F extends TraceFieldSelection = Trues<TraceFieldSelection>> = Simplify<
-    Select<TraceCallFields, F> & RemoveEmptyObjects<{action: TraceCallAction<F>; result?: TraceCallResult<F>}>
+    Select<TraceCallFields, F> &
+        ConditionalOmit<{action: TraceCallAction<F>; result?: TraceCallResult<F>}, EmptyObject | undefined>
 >
 
 export type TraceSuicide<F extends TraceFieldSelection = Trues<TraceFieldSelection>> = Simplify<
-    Select<TraceSuicideFields, F> & RemoveEmptyObjects<{action: TraceSuicideAction<F>}>
+    Select<TraceSuicideFields, F> & ConditionalOmit<{action: TraceSuicideAction<F>}, EmptyObject | undefined>
 >
 
 export type TraceReward<F extends TraceFieldSelection = Trues<TraceFieldSelection>> = Simplify<
-    Select<TraceRewardFields, F> & RemoveEmptyObjects<{action: TraceRewardAction<F>}>
+    Select<TraceRewardFields, F> & ConditionalOmit<{action: TraceRewardAction<F>}, EmptyObject | undefined>
 >
 
 export type Trace<F extends TraceFieldSelection = Trues<TraceFieldSelection>> = F extends any
@@ -271,7 +272,7 @@ export type StateDiff<F extends StateDiffFieldSelection = Trues<StateDiffFieldSe
     : never
 
 export type FieldSelection = {
-    block: BlockHeaderFieldSelection
+    block?: BlockHeaderFieldSelection
     transaction?: TransactionFieldSelection
     log?: LogFieldSelection
     trace?: TraceFieldSelection
@@ -338,12 +339,12 @@ export type FinalizedQuery = Simplify<
     } & DataRequest
 >
 
-export type BlockData<F extends FieldSelection> = Simplify<{
-    header: BlockHeader<F['block']>
-    logs?: Log<ExcludeUndefined<F['log']>>[]
-    transactions?: Transaction<ExcludeUndefined<F['transaction']>>[]
-    traces?: Trace<ExcludeUndefined<F['trace']>>[]
-    stateDiffs?: StateDiff<ExcludeUndefined<F['stateDiff']>>[]
-}>
+export type BlockData<F extends FieldSelection> = {
+    header: BlockHeader<F['block'] & {}>
+    logs?: Log<F['log'] & {}>[]
+    transactions?: Transaction<F['transaction'] & {}>[]
+    traces?: Trace<F['trace'] & {}>[]
+    stateDiffs?: StateDiff<F['stateDiff'] & {}>[]
+}
 
 export type Response<Q extends FinalizedQuery> = BlockData<Q['fields']>

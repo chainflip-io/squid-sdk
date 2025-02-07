@@ -1,4 +1,4 @@
-import {Bytes, Bytes32, ExcludeUndefined, Select, Selector, Simplify} from '@subsquid/util-types'
+import {Bytes, Bytes32, Select, Selector, Simplify, Trues} from '@subsquid/util-types'
 
 export type QualifiedName = string & {}
 
@@ -103,24 +103,24 @@ export type EventFields = {
     _gearProgramId?: Bytes
 }
 
-type Trues<T> = {[K in keyof T]-?: true}
-
 export type BlockHeaderFieldSelection = Simplify<Selector<keyof BlockHeaderFields>>
 export type BlockHeader<T extends BlockHeaderFieldSelection = Trues<BlockHeaderFieldSelection>> = Simplify<
     Select<BlockHeaderFields, T>
 >
 
 export type ExtrinsicFieldSelection = Simplify<Selector<keyof ExtrinsicFields>>
-export type Extrinsic<T extends ExtrinsicFieldSelection = Trues<ExtrinsicFields>> = Simplify<Select<ExtrinsicFields, T>>
+export type Extrinsic<T extends ExtrinsicFieldSelection = Trues<ExtrinsicFieldSelection>> = Simplify<
+    Select<ExtrinsicFields, T>
+>
 
 export type CallFieldSelection = Simplify<Selector<keyof CallFields>>
-export type Call<T extends CallFieldSelection = Trues<CallFields>> = Simplify<Select<CallFields, T>>
+export type Call<T extends CallFieldSelection = Trues<CallFieldSelection>> = Simplify<Select<CallFields, T>>
 
 export type EventFieldSelection = Simplify<Selector<keyof EventFields>>
-export type Event<T extends EventFieldSelection = Trues<EventFields>> = Simplify<Select<EventFields, T>>
+export type Event<T extends EventFieldSelection = Trues<CallFieldSelection>> = Simplify<Select<EventFields, T>>
 
 export type FieldSelection = {
-    block: BlockHeaderFieldSelection
+    block?: BlockHeaderFieldSelection
     extrinsic?: ExtrinsicFieldSelection
     call?: CallFieldSelection
     event?: EventFieldSelection
@@ -187,10 +187,10 @@ export type FinalizedQuery = Simplify<
 >
 
 export type BlockData<F extends FieldSelection> = Simplify<{
-    header: BlockHeader<F['block']>
-    events?: Event<ExcludeUndefined<F['event']>>[]
-    calls?: Call<ExcludeUndefined<F['call']>>[]
-    extrinsics?: Extrinsic<ExcludeUndefined<F['extrinsic']>>[]
+    header: BlockHeader<F['block'] & {}>
+    events?: Event<F['event'] & {}>[]
+    calls?: Call<F['call'] & {}>[]
+    extrinsics?: Extrinsic<F['extrinsic'] & {}>[]
 }>
 
 export type Response<Q extends FinalizedQuery> = BlockData<Q['fields']>

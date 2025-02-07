@@ -1,13 +1,5 @@
 import {HttpClient} from '@subsquid/http-client'
-import {
-    createFuture,
-    Future,
-    Simplify,
-    Throttler,
-    unexpectedCase,
-    wait,
-    withErrorContext,
-} from '@subsquid/util-internal'
+import {createFuture, Future, Throttler, unexpectedCase, wait, withErrorContext} from '@subsquid/util-internal'
 
 export interface PortalClientOptions {
     url: string

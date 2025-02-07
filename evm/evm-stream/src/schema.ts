@@ -1,4 +1,4 @@
-import {FieldSelection} from '@subsquid/portal-client/lib/query/evm'
+import {FieldSelection} from './query'
 import {
     array,
     BYTES,
