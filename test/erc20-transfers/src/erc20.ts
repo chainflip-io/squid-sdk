@@ -1,16 +1,7 @@
-import type {
-    FieldSelection as EvmFieldSelection,
-    RequestOptions,
-    DataRequest as EvmDataRequest,
-    Log,
-    LogRequest,
-    EvmQueryOptions,
-} from '@subsquid/evm-stream'
-import {EvmPortalDataSource} from '@subsquid/evm-stream'
-import {PortalClient} from '@subsquid/portal-client'
-import type {Bytes20, Select, Selector, Simplify, Trues} from '@subsquid/util-types'
-import type {RangeRequest, Range} from '@subsquid/util-internal-range'
-import {getRequestAt} from '@subsquid/util-internal-range'
+import type {RequestOptions, LogRequest, EvmQueryOptions, FieldSelection} from '@subsquid/evm-stream'
+import {mergeSelection} from '@subsquid/evm-stream'
+import type {Bytes20, ConditionalPick, Select, Selector, Simplify, Trues} from '@subsquid/util-types'
+import type {RangeRequest} from '@subsquid/util-internal-range'
 import * as erc20 from './abi/erc20'
 
 export type TransferFields = {
@@ -48,35 +39,30 @@ export type Erc20QueryOptions<F extends Erc20FieldSelection = Erc20FieldSelectio
     requests: RangeRequest<Erc20DataRequest>[]
 }
 
-export type ConvertErc20Qeury<
-    T extends Erc20QueryOptions,
-    F extends Erc20FieldSelection = T['fields'],
-    transfer extends TransferFieldSelection = F['transfer'] & {}
-> = EvmQueryOptions<{
-    log: Simplify<{
-        topics: Extract<transfer['from'] | transfer['to'] | transfer['value'], true>
-        data: Extract<transfer['from'] | transfer['to'] | transfer['value'], true>
-        logIndex: Extract<transfer['logIndex'], true>
-        transactionIndex: Extract<transfer['transactionIndex'], true>
-        transactionHash: Extract<transfer['transactionHash'], true>
-        address: Extract<transfer['address'], true>
-    }>
-}> extends infer R ? R : never
+export type ConvertFieldSelection<
+    F extends Erc20FieldSelection,
+    T extends TransferFieldSelection = F['transfer'] & {}
+> = {
+    log: ConditionalPick<
+        {
+            topics: Extract<T['from'] | T['to'] | T['value'], true>
+            data: Extract<T['from'] | T['to'] | T['value'], true>
+            logIndex: T['logIndex']
+            transactionIndex: T['transactionIndex']
+            transactionHash: T['transactionHash']
+            address: T['address']
+        },
+        true
+    >
+}
+
+export type ConvertErc20Qeury<T extends Erc20QueryOptions> = EvmQueryOptions<ConvertFieldSelection<T['fields']>>
 
 export function erc20Query<T extends Erc20QueryOptions>(options: T): ConvertErc20Qeury<T> {
     let {fields, requests} = options
 
     return {
-        fields: {
-            log: {
-                logIndex: fields.transfer?.logIndex as any,
-                transactionHash: fields.transfer?.transactionHash as any,
-                transactionIndex: fields.transfer?.transactionIndex as any,
-                address: fields.transfer?.address as any,
-                data: (fields.transfer?.value || fields.transfer?.from || fields.transfer?.to) as any,
-                topics: (fields.transfer?.value || fields.transfer?.from || fields.transfer?.to) as any,
-            },
-        },
+        fields: convertFieldSelection(fields),
         requests: requests.map(({range, request}) => ({
             range,
             request: {
@@ -93,6 +79,23 @@ export function erc20Query<T extends Erc20QueryOptions>(options: T): ConvertErc2
             },
         })),
     }
+}
+
+function convertFieldSelection<F extends Erc20FieldSelection>(fields: F): ConvertFieldSelection<F> {
+    let {transfer} = fields
+
+    return {
+        log: transfer
+            ? {
+                  logIndex: transfer.logIndex,
+                  transactionHash: transfer.transactionHash,
+                  transactionIndex: transfer.transactionIndex,
+                  address: transfer.address,
+                  data: transfer.value || transfer.from || transfer.to,
+                  topics: transfer.value || transfer.from || transfer.to,
+              }
+            : undefined,
+    } satisfies FieldSelection as any
 }
 
 function addressToTopic(a: string) {

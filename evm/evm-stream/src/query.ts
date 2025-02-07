@@ -127,12 +127,13 @@ type Test = MergeQueryOptionsAll<
 export function mergeRequests(...requests: RangeRequest<Evm.DataRequest>[]): RangeRequest<Evm.DataRequest>[] {
     return mergeRangeRequests(requests, mergeDataRequests)
 }
-
-export function mergeQueries<T extends readonly EvmQueryOptions[]>(...queries: T): MergeQueryOptionsAll<T> {
+export function mergeQueries<T extends EvmQueryOptions, U extends EvmQueryOptions>(a: T, b: U): MergeQueryOptions<T, U>
+export function mergeQueries<T extends readonly EvmQueryOptions[]>(...queries: T): MergeQueryOptionsAll<T>
+export function mergeQueries<T extends readonly EvmQueryOptions[]>(...queries: T) {
     return {
         fields: mergeSelection(...queries.map((q) => q.fields)),
         requests: mergeRequests(...queries.flatMap((q) => q.requests)),
-    } as any
+    }
 }
 
 let test = mergeQueries(
@@ -171,7 +172,9 @@ function mapRequest<T>(options: RequestOptions<T>): T {
     return req
 }
 
-function mergeSelection<T extends readonly Selection[]>(...selections: T): MergeSelectionAll<T> {
+export function mergeSelection<T extends Selection, U extends Selection>(a: T, b: U): MergeSelection<T, U>
+export function mergeSelection<T extends readonly Selection[]>(...selections: T): MergeSelectionAll<T>
+export function mergeSelection<T extends readonly Selection[]>(...selections: T) {
     let res: Selection = {}
 
     for (let selection of selections) {
@@ -186,5 +189,5 @@ function mergeSelection<T extends readonly Selection[]>(...selections: T): Merge
         }
     }
 
-    return res as any
+    return res
 }

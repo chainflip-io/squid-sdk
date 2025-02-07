@@ -25,36 +25,20 @@ async function main() {
                 to: true,
                 hash: true,
             },
-            stateDiff: {
-                kind: true,
-                next: true,
-                prev: true,
-            },
-        })
-        .addLog({
-            request: {
-                address: ['0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48'],
-                topic0: ['0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'],
-            },
         })
         .build()
 
     let dataSource = new EvmPortalDataSource({
         portal,
         query: mergeQueries(
-            {
-                fields: {
-                    transaction: {
-                        gas: true,
-                    },
-                },
-                requests: [],
-            },
+            query,
             erc20Query({
                 fields: {
                     transfer: {
                         from: true,
                         to: true,
+                        address: true,
+                        value: true,
                     },
                 },
                 requests: [
@@ -63,7 +47,7 @@ async function main() {
                         request: {
                             transfers: [
                                 {
-                                    address: ['0x.....'],
+                                    address: ['0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48'],
                                     transaction: true,
                                 },
                             ],

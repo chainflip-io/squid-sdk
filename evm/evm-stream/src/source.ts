@@ -10,8 +10,16 @@ import {
     getTraceFrameValidator,
     project,
 } from './schema'
-import {BlockData, DataRequest, EvmQueryOptions, FieldSelection, mergeDataRequests, Response} from './query'
-import {MergeSelection} from '@subsquid/util-types'
+import {
+    BlockData,
+    DataRequest,
+    EvmQueryOptions,
+    FieldSelection,
+    mergeDataRequests,
+    mergeSelection,
+    Response,
+} from './query'
+import {MergeSelection, MergeSelectionAll} from '@subsquid/util-types'
 
 export interface BlockRef {
     number: number
@@ -240,13 +248,10 @@ export function mapBlock<F extends FieldSelection, B extends BlockData<F> = Bloc
 }
 
 function getFields<T extends FieldSelection>(fields: T): GetFields<T> {
-    return {
-        ...fields,
-        block: {...fields?.block, ...REQUIRED_FIELDS.block},
-    } as any
+    return mergeSelection(REQUIRED_FIELDS, fields)
 }
 
-type GetFields<F extends FieldSelection> = MergeSelection<F, ReqiredFieldSelection>
+type GetFields<F extends FieldSelection> = MergeSelection<ReqiredFieldSelection, F>
 
 type ReqiredFieldSelection = typeof REQUIRED_FIELDS
 

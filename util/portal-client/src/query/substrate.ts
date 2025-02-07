@@ -1,4 +1,4 @@
-import {Bytes, Bytes32, Select, Selector, Simplify, Trues} from '@subsquid/util-types'
+import type {Bytes, Bytes32, Select, Selector, Simplify, Trues} from '@subsquid/util-types'
 
 export type QualifiedName = string & {}
 
