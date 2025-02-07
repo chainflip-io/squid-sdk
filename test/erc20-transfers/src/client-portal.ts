@@ -55,28 +55,6 @@ async function main() {
                     transfer: {
                         from: true,
                         to: true,
-                        logIndex: true,
-                    },
-                },
-                requests: [
-                    {
-                        range: {from: 0},
-                        request: {
-                            transfers: [
-                                {
-                                    address: ['0x.....'],
-                                    transaction: true,
-                                },
-                            ],
-                        },
-                    },
-                ],
-            }),
-            erc20Query({
-                fields: {
-                    transfer: {
-                        from: true,
-                        to: true,
                     },
                 },
                 requests: [

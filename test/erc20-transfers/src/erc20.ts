@@ -53,14 +53,14 @@ export type ConvertErc20Qeury<
     F extends Erc20FieldSelection = T['fields'],
     transfer extends TransferFieldSelection = F['transfer'] & {}
 > = EvmQueryOptions<{
-    log: {
+    log: Simplify<{
         topics: Extract<transfer['from'] | transfer['to'] | transfer['value'], true>
         data: Extract<transfer['from'] | transfer['to'] | transfer['value'], true>
         logIndex: Extract<transfer['logIndex'], true>
         transactionIndex: Extract<transfer['transactionIndex'], true>
         transactionHash: Extract<transfer['transactionHash'], true>
         address: Extract<transfer['address'], true>
-    }
+    }>
 }> extends infer R ? R : never
 
 export function erc20Query<T extends Erc20QueryOptions>(options: T): ConvertErc20Qeury<T> {
