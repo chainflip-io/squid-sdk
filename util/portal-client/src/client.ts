@@ -1,7 +1,7 @@
 import {HttpClient} from '@subsquid/http-client'
 import {createFuture, Future, Throttler, unexpectedCase, wait, withErrorContext} from '@subsquid/util-internal'
 
-export interface PortalClientOptions {
+export type PortalClientOptions = {
     url: string
     http?: HttpClient
 
@@ -13,7 +13,7 @@ export interface PortalClientOptions {
     headPollInterval?: number
 }
 
-export interface PortalRequestOptions {
+export type PortalRequestOptions = {
     headers?: HeadersInit
     retryAttempts?: number
     retrySchedule?: number[]
@@ -22,7 +22,7 @@ export interface PortalRequestOptions {
     abort?: AbortSignal
 }
 
-export interface PortalStreamOptions {
+export type PortalStreamOptions = {
     request?: Omit<PortalRequestOptions, 'abort'>
 
     minBytes?: number
@@ -35,9 +35,8 @@ export interface PortalStreamOptions {
     stopOnHead?: boolean
 }
 
-export type PortalStreamData<B> = {
-    finalizedHead?: HashAndNumber
-    blocks: B[]
+export type PortalStreamData<B> = B[] & {
+    [PortalClient.finalizedHead]?: BlockRef
 }
 
 export type PortalQuery = {
@@ -46,13 +45,13 @@ export type PortalQuery = {
     toBlock?: number
 }
 
-export type HashAndNumber = {
+export type BlockRef = {
     hash: string
     number: number
 }
 
 export type PortalResponse = {
-    header: HashAndNumber
+    header: BlockRef
 }
 
 export class PortalClient {
@@ -179,19 +178,23 @@ export class PortalClient {
     }
 }
 
+export namespace PortalClient {
+    export const finalizedHead = Symbol('PortalClient.finalizedHead')
+}
+
 function createReadablePortalStream<Q extends PortalQuery = PortalQuery, B extends PortalResponse = PortalResponse>(
     query: Q,
     options: Required<PortalStreamOptions>,
     requestStream: (
         query: Q,
         options?: PortalRequestOptions
-    ) => Promise<{finalizedHead: HashAndNumber; stream: ReadableStream<string[]>} | undefined>
+    ) => Promise<{finalizedHead: BlockRef; stream: ReadableStream<string[]>} | undefined>
 ): ReadableStream<PortalStreamData<B>> {
     let {headPollInterval, stopOnHead, request, ...bufferOptions} = options
 
     let abortStream = new AbortController()
 
-    let finalizedHead: HashAndNumber | undefined
+    let finalizedHead: BlockRef | undefined
     let buffer = new PortalStreamBuffer<B>(bufferOptions)
 
     async function ingest() {
@@ -272,10 +275,10 @@ function createReadablePortalStream<Q extends PortalQuery = PortalQuery, B exten
                 if (result.done) {
                     controller.close()
                 } else {
-                    controller.enqueue({
-                        finalizedHead,
-                        blocks: result.value || [],
+                    Object.defineProperty(result.value, PortalClient.finalizedHead, {
+                        value: finalizedHead,
                     })
+                    controller.enqueue(result.value)
                 }
             } catch (err) {
                 controller.error(err)

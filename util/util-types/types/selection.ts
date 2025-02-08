@@ -9,9 +9,9 @@ export type Selection = {
 }
 
 export type Select<T, S> = T extends any
-    ? {
+    ? Simplify<{
           [K in Extract<keyof T, keyof S> as S[K] extends true ? K : never]: T[K]
-      }
+      }>
     : never
 
 type MergeSelectionUnique<T, U> = {

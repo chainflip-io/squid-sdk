@@ -180,18 +180,20 @@ export type StateDiffDeleteFields = StateDiffBaseFields & {
     next?: null
 }
 
-export type BlockHeaderFieldSelection = Simplify<Selector<keyof BlockHeaderFields>>
-export type BlockHeader<T extends BlockHeaderFieldSelection = Trues<BlockHeaderFieldSelection>> = Simplify<
-    Select<BlockHeaderFields, T>
+export type BlockHeaderFieldSelection = Selector<keyof BlockHeaderFields>
+export type BlockHeader<T extends BlockHeaderFieldSelection = Trues<BlockHeaderFieldSelection>> = Select<
+    BlockHeaderFields,
+    T
 >
 
 export type TransactionFieldSelection = Selector<keyof TransactionFields>
-export type Transaction<T extends TransactionFieldSelection = Trues<TransactionFieldSelection>> = Simplify<
-    Select<TransactionFields, T>
+export type Transaction<T extends TransactionFieldSelection = Trues<TransactionFieldSelection>> = Select<
+    TransactionFields,
+    T
 >
 
 export type LogFieldSelection = Selector<keyof LogFields>
-export type Log<T extends LogFieldSelection = Trues<LogFieldSelection>> = Simplify<Select<LogFields, T>>
+export type Log<T extends LogFieldSelection = Trues<LogFieldSelection>> = Select<LogFields, T>
 
 export type TraceFieldSelection = Selector<
     | keyof TraceBaseFields
@@ -203,28 +205,34 @@ export type TraceFieldSelection = Selector<
     | AddPrefix<'reward', keyof TraceRewardActionFields>
 >
 
-export type TraceCreateAction<F extends TraceFieldSelection = Trues<TraceFieldSelection>> = Simplify<
-    Select<TraceCreateActionFields, RemoveKeysPrefix<'create', F>>
+export type TraceCreateAction<F extends TraceFieldSelection = Trues<TraceFieldSelection>> = Select<
+    TraceCreateActionFields,
+    RemoveKeysPrefix<'create', F>
 >
 
-export type TraceCreateResult<F extends TraceFieldSelection = Trues<TraceFieldSelection>> = Simplify<
-    Select<TraceCreateResultFields, RemoveKeysPrefix<'createResult', F>>
+export type TraceCreateResult<F extends TraceFieldSelection = Trues<TraceFieldSelection>> = Select<
+    TraceCreateResultFields,
+    RemoveKeysPrefix<'createResult', F>
 >
 
-export type TraceCallAction<F extends TraceFieldSelection = Trues<TraceFieldSelection>> = Simplify<
-    Select<TraceCallActionFields, RemoveKeysPrefix<'call', F>>
+export type TraceCallAction<F extends TraceFieldSelection = Trues<TraceFieldSelection>> = Select<
+    TraceCallActionFields,
+    RemoveKeysPrefix<'call', F>
 >
 
-export type TraceCallResult<F extends TraceFieldSelection = Trues<TraceFieldSelection>> = Simplify<
-    Select<TraceCallResultFields, RemoveKeysPrefix<'callResult', F>>
+export type TraceCallResult<F extends TraceFieldSelection = Trues<TraceFieldSelection>> = Select<
+    TraceCallResultFields,
+    RemoveKeysPrefix<'callResult', F>
 >
 
-export type TraceSuicideAction<F extends TraceFieldSelection = Trues<TraceFieldSelection>> = Simplify<
-    Select<TraceSuicideActionFields, RemoveKeysPrefix<'suicide', F>>
+export type TraceSuicideAction<F extends TraceFieldSelection = Trues<TraceFieldSelection>> = Select<
+    TraceSuicideActionFields,
+    RemoveKeysPrefix<'suicide', F>
 >
 
-export type TraceRewardAction<F extends TraceFieldSelection = Trues<TraceFieldSelection>> = Simplify<
-    Select<TraceRewardActionFields, RemoveKeysPrefix<'reward', F>>
+export type TraceRewardAction<F extends TraceFieldSelection = Trues<TraceFieldSelection>> = Select<
+    TraceRewardActionFields,
+    RemoveKeysPrefix<'reward', F>
 >
 
 export type TraceCreate<F extends TraceFieldSelection = Trues<TraceFieldSelection>> = Simplify<
@@ -237,13 +245,11 @@ export type TraceCall<F extends TraceFieldSelection = Trues<TraceFieldSelection>
         ConditionalOmit<{action: TraceCallAction<F>; result?: TraceCallResult<F>}, EmptyObject | undefined>
 >
 
-export type TraceSuicide<F extends TraceFieldSelection = Trues<TraceFieldSelection>> = Simplify<
-    Select<TraceSuicideFields, F> & ConditionalOmit<{action: TraceSuicideAction<F>}, EmptyObject | undefined>
->
+export type TraceSuicide<F extends TraceFieldSelection = Trues<TraceFieldSelection>> = Select<TraceSuicideFields, F> &
+    ConditionalOmit<{action: TraceSuicideAction<F>}, EmptyObject | undefined>
 
-export type TraceReward<F extends TraceFieldSelection = Trues<TraceFieldSelection>> = Simplify<
-    Select<TraceRewardFields, F> & ConditionalOmit<{action: TraceRewardAction<F>}, EmptyObject | undefined>
->
+export type TraceReward<F extends TraceFieldSelection = Trues<TraceFieldSelection>> = Select<TraceRewardFields, F> &
+    ConditionalOmit<{action: TraceRewardAction<F>}, EmptyObject | undefined>
 
 export type Trace<F extends TraceFieldSelection = Trues<TraceFieldSelection>> = F extends any
     ? TraceCreate<F> | TraceCall<F> | TraceSuicide<F> | TraceReward<F>
@@ -251,20 +257,24 @@ export type Trace<F extends TraceFieldSelection = Trues<TraceFieldSelection>> = 
 
 export type StateDiffFieldSelection = Selector<keyof StateDiffBaseFields>
 
-export type StateDiffNoChange<F extends StateDiffFieldSelection = Trues<StateDiffFieldSelection>> = Simplify<
-    Select<StateDiffNoChangeFields, F>
+export type StateDiffNoChange<F extends StateDiffFieldSelection = Trues<StateDiffFieldSelection>> = Select<
+    StateDiffNoChangeFields,
+    F
 >
 
-export type StateDiffAdd<F extends StateDiffFieldSelection = Trues<StateDiffFieldSelection>> = Simplify<
-    Select<StateDiffAddFields, F>
+export type StateDiffAdd<F extends StateDiffFieldSelection = Trues<StateDiffFieldSelection>> = Select<
+    StateDiffAddFields,
+    F
 >
 
-export type StateDiffChange<F extends StateDiffFieldSelection = Trues<StateDiffFieldSelection>> = Simplify<
-    Select<StateDiffChangeFields, F>
+export type StateDiffChange<F extends StateDiffFieldSelection = Trues<StateDiffFieldSelection>> = Select<
+    StateDiffChangeFields,
+    F
 >
 
-export type StateDiffDelete<F extends StateDiffFieldSelection = Trues<StateDiffFieldSelection>> = Simplify<
-    Select<StateDiffDeleteFields, F>
+export type StateDiffDelete<F extends StateDiffFieldSelection = Trues<StateDiffFieldSelection>> = Select<
+    StateDiffDeleteFields,
+    F
 >
 
 export type StateDiff<F extends StateDiffFieldSelection = Trues<StateDiffFieldSelection>> = F extends any

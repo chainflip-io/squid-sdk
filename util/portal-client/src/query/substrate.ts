@@ -103,21 +103,20 @@ export type EventFields = {
     _gearProgramId?: Bytes
 }
 
-export type BlockHeaderFieldSelection = Simplify<Selector<keyof BlockHeaderFields>>
-export type BlockHeader<T extends BlockHeaderFieldSelection = Trues<BlockHeaderFieldSelection>> = Simplify<
-    Select<BlockHeaderFields, T>
+export type BlockHeaderFieldSelection = Selector<keyof BlockHeaderFields>
+export type BlockHeader<T extends BlockHeaderFieldSelection = Trues<BlockHeaderFieldSelection>> = Select<
+    BlockHeaderFields,
+    T
 >
 
-export type ExtrinsicFieldSelection = Simplify<Selector<keyof ExtrinsicFields>>
-export type Extrinsic<T extends ExtrinsicFieldSelection = Trues<ExtrinsicFieldSelection>> = Simplify<
-    Select<ExtrinsicFields, T>
->
+export type ExtrinsicFieldSelection = Selector<keyof ExtrinsicFields>
+export type Extrinsic<T extends ExtrinsicFieldSelection = Trues<ExtrinsicFieldSelection>> = Select<ExtrinsicFields, T>
 
-export type CallFieldSelection = Simplify<Selector<keyof CallFields>>
-export type Call<T extends CallFieldSelection = Trues<CallFieldSelection>> = Simplify<Select<CallFields, T>>
+export type CallFieldSelection = Selector<keyof CallFields>
+export type Call<T extends CallFieldSelection = Trues<CallFieldSelection>> = Select<CallFields, T>
 
-export type EventFieldSelection = Simplify<Selector<keyof EventFields>>
-export type Event<T extends EventFieldSelection = Trues<CallFieldSelection>> = Simplify<Select<EventFields, T>>
+export type EventFieldSelection = Selector<keyof EventFields>
+export type Event<T extends EventFieldSelection = Trues<CallFieldSelection>> = Select<EventFields, T>
 
 export type FieldSelection = {
     block?: BlockHeaderFieldSelection
