@@ -167,11 +167,6 @@ function mapRequest<T>(options: RequestOptions<T>): T {
     let req = {...options.request}
     for (let key in req) {
         let val = (req as any)[key]
-        if (Array.isArray(val)) {
-            ;(req as any)[key] = val.map((s) => {
-                return typeof s == 'string' ? s.toLowerCase() : s
-            })
-        }
     }
     return req
 }

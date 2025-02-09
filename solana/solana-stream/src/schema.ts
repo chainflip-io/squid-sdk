@@ -41,15 +41,15 @@ export const getDataSchema = weakMemo((fields: FieldSelection) => {
         hash: B58,
         parentHash: B58,
         ...project(fields.block, {
-            slot: NAT,
+            height: NAT,
             parentSlot: NAT,
             timestamp: NAT,
         }),
     })
 
     let Transaction = object({
-        transactionIndex: NAT,
         ...project(fields.transaction, {
+            transactionIndex: NAT,
             version: oneOf({
                 legacy: constant('legacy'),
                 versionNumber: NAT,
@@ -75,9 +75,9 @@ export const getDataSchema = weakMemo((fields: FieldSelection) => {
     })
 
     let Instruction = object({
-        transactionIndex: NAT,
-        instructionAddress: array(NAT),
         ...project(fields.instruction, {
+            transactionIndex: NAT,
+            instructionAddress: array(NAT),
             programId: B58,
             accounts: array(B58),
             data: B58,
@@ -108,18 +108,18 @@ export const getDataSchema = weakMemo((fields: FieldSelection) => {
     })
 
     let Balance = object({
-        transactionIndex: NAT,
-        account: B58,
         ...project(fields.balance, {
+            transactionIndex: NAT,
+            account: B58,
             pre: BIG_NAT,
             post: BIG_NAT,
         }),
     })
 
     let TokenBalance = object({
-        transactionIndex: NAT,
-        account: B58,
         ...project(fields.tokenBalance, {
+            transactionIndex: NAT,
+            account: B58,
             preProgramId: option(B58),
             postProgramId: option(B58),
             preMint: option(B58),
@@ -134,8 +134,8 @@ export const getDataSchema = weakMemo((fields: FieldSelection) => {
     })
 
     let Reward = object({
-        pubkey: B58,
         ...project(fields.reward, {
+            pubkey: B58,
             lamports: BIG_NAT,
             postBalance: BIG_NAT,
             rewardType: option(STRING),

@@ -616,6 +616,11 @@
       "projectFolder": "test/erc20-transfers",
       "shouldPublish": false
     },
+    {
+      "packageName": "solana-example",
+      "projectFolder": "test/solana-example",
+      "shouldPublish": false
+    },
 //    {
 //      "packageName": "karura-erc20",
 //      "projectFolder": "test/karura-erc20",

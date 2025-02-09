@@ -1,6 +1,6 @@
 {
   "name": "@subsquid/solana-stream",
-  "version": "0.0.0",
+  "version": "0.1.3",
   "description": "SVM block data streamer",
   "license": "GPL-3.0-or-later",
   "repository": "git@github.com:subsquid/squid.git",
@@ -22,7 +22,9 @@
     "@subsquid/util-internal-range": "~0.3.0",
     "@subsquid/http-client": "~1.6.0",
     "@subsquid/util-internal-validation": "~0.7.0",
-    "@subsquid/data-source": "^0.0.0"
+    "@subsquid/data-source": "^0.0.0",
+    "bs58": "^6.0.0",
+    "@subsquid/util-internal-hex": "^1.2.2"
   },
   "devDependencies": {
     "@types/node": "^18.18.14",
