@@ -1,4 +1,4 @@
-import {Bytes, Select, Selector, Trues} from '@subsquid/util-types'
+import {Bytes, Select, Selector, Simplify, Trues} from '@subsquid/util-types'
 
 export type BlockHeaderFields = {
     hash: Bytes
@@ -121,6 +121,8 @@ export type PrePostTokenBalanceFields = {
     postAmount: bigint
 }
 
+export type TokenBalanceFields = PreTokenBalanceFields | PostTokenBalanceFields | PrePostTokenBalanceFields
+
 export type RewardFields = {
     pubkey: Bytes
     lamports: bigint
@@ -156,9 +158,9 @@ export type LogMessage<F extends LogMessageFieldSelection = Trues<LogMessageFiel
 export type BalanceFieldSelection = Selector<keyof BalanceFields>
 export type Balance<F extends BalanceFieldSelection = Trues<BalanceFieldSelection>> = Select<BalanceFields, F>
 
-export type TokenBalanceFieldSelection = Selector<keyof PreTokenBalanceFields>
+export type TokenBalanceFieldSelection = Selector<keyof TokenBalanceFields>
 export type TokenBalance<F extends TokenBalanceFieldSelection = Trues<TokenBalanceFieldSelection>> = Select<
-    PreTokenBalanceFields,
+    TokenBalanceFields,
     F
 >
 
@@ -169,20 +171,10 @@ export type FieldSelection = {
     block?: BlockHeaderFieldSelection
     transaction?: TransactionFieldSelection
     instruction?: InstructionFieldSelection
-    logMessage?: LogMessageFieldSelection
+    log?: LogMessageFieldSelection
     balance?: BalanceFieldSelection
     tokenBalance?: TokenBalanceFieldSelection
     reward?: RewardFieldSelection
-}
-
-export type BlockData<F extends FieldSelection> = {
-    header: BlockHeader<F['block'] & {}>
-    transactions?: Transaction<F['transaction'] & {}>[]
-    instructions?: Instruction<F['instruction'] & {}>[]
-    logs?: LogMessage<F['logMessage'] & {}>[]
-    balances?: Balance<F['balance'] & {}>[]
-    tokenBalances?: TokenBalance<F['tokenBalance'] & {}>[]
-    rewards?: Reward<F['reward'] & {}>[]
 }
 
 export type DataRequest = {
@@ -266,3 +258,24 @@ export type TokenBalanceRequest = {
 export type RewardRequest = {
     pubkey?: Bytes[]
 }
+
+export type FinalizedQuery = Simplify<
+    {
+        type: 'solana'
+        fromBlock?: number
+        toBlock?: number
+        fields: FieldSelection
+    } & DataRequest
+>
+
+export type BlockData<F extends FieldSelection> = {
+    header: BlockHeader<F['block'] & {}>
+    transactions?: Transaction<F['transaction'] & {}>[]
+    instructions?: Instruction<F['instruction'] & {}>[]
+    logs?: LogMessage<F['log'] & {}>[]
+    balances?: Balance<F['balance'] & {}>[]
+    tokenBalances?: TokenBalance<F['tokenBalance'] & {}>[]
+    rewards?: Reward<F['reward'] & {}>[]
+}
+
+export type Response<Q extends FinalizedQuery> = BlockData<Q['fields']>

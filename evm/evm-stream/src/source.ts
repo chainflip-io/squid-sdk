@@ -19,33 +19,8 @@ import {
     mergeSelection,
     Response,
 } from './query'
-import {MergeSelection, MergeSelectionAll} from '@subsquid/util-types'
-
-export interface BlockRef {
-    number: number
-    hash: string
-}
-
-export type DataSourceStreamItem<B> = B & {[DataSource.blockRef]: BlockRef}
-
-export type DataSourceStreamData<B> = DataSourceStreamItem<B>[] & {
-    [DataSource.finalizedHead]?: BlockRef
-}
-
-export type DataSourceStream<B> = ReadableStream<DataSourceStreamData<B>>
-
-export namespace DataSource {
-    export const blockRef = Symbol('DataSource.blockRef')
-    export const finalizedHead = Symbol('DataSource.finalizedHead')
-}
-
-export interface DataSource<B> {
-    getHeight(): Promise<number>
-    getFinalizedHeight(): Promise<number>
-    getBlockStream(range?: Range): DataSourceStream<B>
-}
-
-export type GetDataSourceBlock<T> = T extends DataSource<infer B> ? B : never
+import {MergeSelection} from '@subsquid/util-types'
+import {DataSource, DataSourceStream, DataSourceStreamData} from '@subsquid/data-source'
 
 export interface EvmPortalDataSourceOptions<Q extends EvmQueryOptions> {
     portal: string | PortalClient
@@ -79,9 +54,14 @@ export class EvmPortalDataSource<
         let fields = getFields(this.fields)
         let requests = applyRangeBound(this.requests, range)
 
-        let {writable, readable} = new TransformStream<PortalStreamData<Response<any>>, DataSourceStreamData<B>>({
+        // FIXME: remove any
+        let {writable, readable} = new TransformStream<
+            PortalStreamData<BlockData<any>>,
+            DataSourceStreamData<B>
+        >({
             transform: async (data, controller) => {
-                let blocks = data.blocks.map((b) => {
+                let blocks = data.map((b) => {
+                    // FIXME: remove any
                     let block = mapBlock(b, fields) as any
                     Object.defineProperty(block, DataSource.blockRef, {
                         value: {hash: block.header.hash, number: block.header.number},
@@ -90,7 +70,7 @@ export class EvmPortalDataSource<
                 })
 
                 Object.defineProperty(blocks, DataSource.finalizedHead, {
-                    value: data.finalizedHead,
+                    value: data[PortalClient.finalizedHead],
                 })
 
                 controller.enqueue(blocks as DataSourceStreamData<B>)

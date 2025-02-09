@@ -1,8 +1,9 @@
 import {PortalClient} from '@subsquid/portal-client'
 import {HttpClient} from '@subsquid/http-client'
-import {DataSource, EvmPortalDataSource} from '@subsquid/evm-stream'
+import {EvmPortalDataSource} from '@subsquid/evm-stream'
 import {EvmQueryBuilder, mergeQueries} from '@subsquid/evm-stream/lib/query'
 import {erc20Query} from './erc20'
+import {DataSource} from '@subsquid/data-source'
 
 async function main() {
     let portal = new PortalClient({

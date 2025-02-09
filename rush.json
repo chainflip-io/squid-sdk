@@ -420,8 +420,20 @@
     //   // "versionPolicyName": ""
     // },
     {
+      "packageName": "@subsquid/data-source",
+      "projectFolder": "util/data-source",
+      "shouldPublish": true,
+      "versionPolicyName": "npm"
+    },
+    {
       "packageName": "@subsquid/evm-stream",
       "projectFolder": "evm/evm-stream",
+      "shouldPublish": true,
+      "versionPolicyName": "npm"
+    },
+    {
+      "packageName": "@subsquid/solana-stream",
+      "projectFolder": "solana/solana-stream",
       "shouldPublish": true,
       "versionPolicyName": "npm"
     },

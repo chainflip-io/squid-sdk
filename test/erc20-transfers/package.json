@@ -16,7 +16,8 @@
     "@subsquid/evm-stream": "^0.0.0",
     "@subsquid/util-internal": "^3.2.0",
     "fastify": "^5.2.1",
-    "@subsquid/util-internal-range": "~0.3.0"
+    "@subsquid/util-internal-range": "~0.3.0",
+    "@subsquid/data-source": "^0.0.0"
   },
   "devDependencies": {
     "@subsquid/evm-typegen": "^4.3.0",

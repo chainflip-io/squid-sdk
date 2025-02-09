@@ -1,6 +1,6 @@
 import type {Simplify, ConditionalKeys} from './misc'
 
-export type Selector<Props extends string = string> = {
+export type Selector<Props extends string | number | symbol = string> = {
     [P in Props]?: boolean
 }
 
@@ -14,28 +14,28 @@ export type Select<T, S> = T extends any
       }>
     : never
 
-type MergeSelectionUnique<T, U> = {
-    [K in Exclude<keyof T, keyof U> as T[K] extends true | Selection ? K : never]: T[K]
+type MergeSelectionUnique<T, U, S extends Selection> = {
+    [K in Exclude<keyof T, keyof U> & keyof S as T[K] extends S[K] ? K : never]: T[K]
 }
 
-type MergeSelectionCommon<T, U> = {
-    [K in Extract<keyof T, keyof U> as T[K] extends true | Selection
+type MergeSelectionCommon<T extends S, U extends S, S extends Selection> = {
+    [K in Extract<keyof T, keyof U> & keyof S as T[K] extends S[K]
         ? K
-        : U[K] extends true | Selection
+        : U[K] extends S[K]
         ? K
-        : never]: T[K] extends true
-        ? true
-        : U[K] extends true
-        ? true
-        : T[K] extends Selection
-        ? U[K] extends Selection
-            ? MergeSelection<T[K], U[K]>
+        : never]: S[K] extends Selection
+        ? T[K] extends Selection
+            ? U[K] extends Selection
+                ? MergeSelection<T[K], U[K], S[K]>
+                : never
             : never
+        : S[K] extends true
+        ? true
         : never
 }
 
-export type MergeSelection<T extends Selection, U extends Selection> = Simplify<
-    MergeSelectionUnique<T, U> & MergeSelectionUnique<U, T> & MergeSelectionCommon<T, U>
+export type MergeSelection<T extends S, U extends S, S extends Selection = Selection> = Simplify<
+    MergeSelectionUnique<T, U, S> & MergeSelectionUnique<U, T, S> & MergeSelectionCommon<T, U, S>
 >
 
 export type MergeSelectionAll<T extends readonly Selection[]> = T extends readonly [infer F, ...infer R]
