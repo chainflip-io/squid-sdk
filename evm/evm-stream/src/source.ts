@@ -16,10 +16,11 @@ import {
     EvmQueryOptions,
     FieldSelection,
     mergeDataRequests,
+    MergeFieldSelection,
     mergeSelection,
     Response,
 } from './query'
-import {MergeSelection} from '@subsquid/util-types'
+import {MergeSelection, Simplify} from '@subsquid/util-types'
 import {DataSource, DataSourceStream, DataSourceStreamData} from '@subsquid/data-source'
 
 export interface EvmPortalDataSourceOptions<Q extends EvmQueryOptions> {
@@ -54,15 +55,13 @@ export class EvmPortalDataSource<
         let fields = getFields(this.fields)
         let requests = applyRangeBound(this.requests, range)
 
-        // FIXME: remove any
         let {writable, readable} = new TransformStream<
-            PortalStreamData<BlockData<any>>,
+            PortalStreamData<BlockData<typeof fields>>,
             DataSourceStreamData<B>
         >({
             transform: async (data, controller) => {
                 let blocks = data.map((b) => {
-                    // FIXME: remove any
-                    let block = mapBlock(b, fields) as any
+                    let block = mapBlock(b, fields)
                     Object.defineProperty(block, DataSource.blockRef, {
                         value: {hash: block.header.hash, number: block.header.number},
                     })
@@ -231,7 +230,9 @@ function getFields<T extends FieldSelection>(fields: T): GetFields<T> {
     return mergeSelection(REQUIRED_FIELDS, fields)
 }
 
-type GetFields<F extends FieldSelection> = MergeSelection<ReqiredFieldSelection, F>
+type GetFields<F extends FieldSelection> = MergeFieldSelection<ReqiredFieldSelection, F>
+
+// type A = BlockData<GetFields<{}>>['header']
 
 type ReqiredFieldSelection = typeof REQUIRED_FIELDS
 

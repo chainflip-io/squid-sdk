@@ -1,4 +1,4 @@
-export type Simplify<T> = {[KeyType in keyof T]: T[KeyType]} & {}
+export type Simplify<T> = {[K in keyof T]: T[K]} & {}
 
 export type AddPrefix<Prefix extends string, S> = S extends string ? `${Prefix}${Capitalize<S>}` : never
 

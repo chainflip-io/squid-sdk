@@ -98,6 +98,8 @@ export function mergeDataRequests(...requests: Evm.DataRequest[]): Evm.DataReque
     return res
 }
 
+export type MergeFieldSelection<T extends Evm.FieldSelection, U extends Evm.FieldSelection> = MergeSelection<T, U>
+
 // NOTE: without condition creates ugly type for some reason
 export type MergeQueryOptions<T extends EvmQueryOptions, U extends EvmQueryOptions> = EvmQueryOptions<
     MergeSelection<T['fields'], U['fields']>

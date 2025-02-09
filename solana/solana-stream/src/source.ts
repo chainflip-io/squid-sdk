@@ -46,10 +46,13 @@ export class SolanaPortalDataSource<
         let fields = getFields(this.fields)
         let requests = applyRangeBound(this.requests, range)
 
-        let {writable, readable} = new TransformStream<PortalStreamData<Response<any>>, DataSourceStreamData<B>>({
+        let {writable, readable} = new TransformStream<
+            PortalStreamData<BlockData<typeof fields>>,
+            DataSourceStreamData<B>
+        >({
             transform: async (data, controller) => {
                 let blocks = data.map((b) => {
-                    let block = mapBlock(b, fields) as any
+                    let block = mapBlock(b, fields)
                     Object.defineProperty(block, DataSource.blockRef, {
                         value: {hash: block.header.hash, number: block.header.number},
                     })
