@@ -1,8 +1,8 @@
 import {mergeQueries, SolanaPortalDataSource, SolanaQueryBuilder} from '@subsquid/solana-stream'
 import * as whirlpool from './abi/whirlpool'
 import {PortalClient} from '@subsquid/portal-client'
-import {HttpClient} from '../../../util/http-client/lib'
-import {DataSource} from '../../../util/data-source/lib'
+import {HttpClient} from '@subsquid/http-client'
+import {DataSource} from '@subsquid/data-source'
 
 const query = new SolanaQueryBuilder()
     // Currently only blocks from 240_000_000 and above are stored in Subsquid Network.
