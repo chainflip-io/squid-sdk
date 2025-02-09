@@ -14,28 +14,28 @@ export type Select<T, S> = T extends any
       }>
     : never
 
-type MergeSelectionUnique<T, U, S extends Selection> = {
-    [K in Exclude<keyof T, keyof U> & keyof S as T[K] extends S[K] ? K : never]: T[K]
+type MergeSelectionUnique<T, U> = {
+    [K in Exclude<keyof T, keyof U> as T[K] extends true | Selection ? K : never]: T[K]
 }
 
-type MergeSelectionCommon<T extends S, U extends S, S extends Selection> = {
-    [K in Extract<keyof T, keyof U> & keyof S as T[K] extends S[K]
+type MergeSelectionCommon<T, U> = {
+    [K in Extract<keyof T, keyof U> as T[K] extends true | Selection
         ? K
-        : U[K] extends S[K]
+        : U[K] extends true | Selection
         ? K
-        : never]: S[K] extends Selection
-        ? T[K] extends Selection
-            ? U[K] extends Selection
-                ? MergeSelection<T[K], U[K], S[K]>
-                : never
-            : never
-        : S[K] extends true
+        : never]: T[K] extends true
         ? true
+        : U[K] extends true
+        ? true
+        : T[K] extends Selection
+        ? U[K] extends Selection
+            ? MergeSelection<T[K], U[K]>
+            : never
         : never
 }
 
-export type MergeSelection<T extends S, U extends S, S extends Selection = Selection> = Simplify<
-    MergeSelectionUnique<T, U, S> & MergeSelectionUnique<U, T, S> & MergeSelectionCommon<T, U, S>
+export type MergeSelection<T, U> = Simplify<
+    MergeSelectionUnique<T, U> & MergeSelectionUnique<U, T> & MergeSelectionCommon<T, U>
 >
 
 export type MergeSelectionAll<T extends readonly Selection[]> = T extends readonly [infer F, ...infer R]
