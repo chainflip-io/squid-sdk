@@ -594,12 +594,6 @@
       "versionPolicyName": "npm"
     },
     {
-      "packageName": "@subsquid/util-types",
-      "projectFolder": "util/util-types",
-      "shouldPublish": true,
-      "versionPolicyName": "npm"
-    },
-    {
       "packageName": "@subsquid/util-xxhash",
       "projectFolder": "util/util-xxhash",
       "shouldPublish": true,

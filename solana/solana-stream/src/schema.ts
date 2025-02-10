@@ -14,7 +14,7 @@ import {
     option,
     STRING,
 } from '@subsquid/util-internal-validation'
-import {Selector} from '@subsquid/util-types'
+import type {Selector} from '@subsquid/util-internal'
 import {FieldSelection} from './query'
 
 export function project<T>(fields: Selector<keyof T> | undefined, obj: T): Partial<T> {

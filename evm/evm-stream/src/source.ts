@@ -20,7 +20,6 @@ import {
     mergeSelection,
     Response,
 } from './query'
-import {MergeSelection, Simplify} from '@subsquid/util-types'
 import {DataSource, DataSourceStream, DataSourceStreamData} from '@subsquid/data-source'
 
 export interface EvmPortalDataSourceOptions<Q extends EvmQueryOptions> {

@@ -12,10 +12,6 @@ export type Select<T, S> = T extends any
           }>
     : never
 
-type MergeSelectionUnique<T, U> = {
-    [K in Exclude<keyof T, keyof U> as T[K] extends true | Selection ? K : never]: T[K]
-}
-
 export type Selection = {
     [P in string]?: boolean | Selection
 }

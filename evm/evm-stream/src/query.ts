@@ -1,6 +1,6 @@
 import {applyRangeBound, mergeRangeRequests, Range, RangeRequest} from '@subsquid/util-internal-range'
 import type {Evm} from '@subsquid/portal-client'
-import type {MergeSelection, MergeSelectionAll, Selection} from '@subsquid/util-types'
+import type {MergeSelection, MergeSelectionAll, Selection} from '@subsquid/util-internal'
 
 export * from '@subsquid/portal-client/lib/query/evm'
 

@@ -1,5 +1,5 @@
 import {toHex} from '@subsquid/util-internal-hex'
-import {Bytes} from '@subsquid/util-types'
+import {Bytes} from '@subsquid/util-internal'
 import bs58 from 'bs58'
 
 export const DATA_SYM = Symbol('DATA')

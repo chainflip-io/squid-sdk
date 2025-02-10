@@ -1,6 +1,5 @@
 import type {RequestOptions, LogRequest, EvmQueryOptions, FieldSelection} from '@subsquid/evm-stream'
-import {mergeSelection} from '@subsquid/evm-stream'
-import type {Bytes20, ConditionalPick, Select, Selector, Simplify, Trues} from '@subsquid/util-types'
+import type {Bytes20, ConditionalPick, Select, Selector, Simplify, Trues} from '@subsquid/util-internal'
 import type {RangeRequest} from '@subsquid/util-internal-range'
 import * as erc20 from './abi/erc20'
 

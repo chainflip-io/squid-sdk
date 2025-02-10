@@ -10,7 +10,7 @@ import type {
     Selector,
     Simplify,
     Trues,
-} from '@subsquid/util-types'
+} from '@subsquid/util-internal'
 
 export type BlockHeaderFields = {
     number: number

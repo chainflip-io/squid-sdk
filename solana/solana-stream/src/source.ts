@@ -10,7 +10,7 @@ import {
     mergeSelection,
     Response,
 } from './query'
-import {MergeSelection} from '@subsquid/util-types'
+import type {MergeSelection} from '@subsquid/util-internal'
 import {DataSource, DataSourceStream, DataSourceStreamData} from '@subsquid/data-source'
 import {getDataSchema} from './schema'
 

@@ -1,4 +1,4 @@
-import {Bytes, Select, Selector, Simplify, Trues} from '@subsquid/util-types'
+import {Bytes, Select, Selector, Simplify, Trues} from '@subsquid/util-internal'
 
 export type BlockHeaderFields = {
     hash: Bytes
