@@ -32,6 +32,7 @@ export type PortalStreamOptions = {
 
     headPollInterval?: number
 
+    renewable?: boolean
     stopOnHead?: boolean
 }
 
@@ -126,6 +127,7 @@ export class PortalClient {
             maxWaitTime = this.maxWaitTime,
             request = {},
             stopOnHead = false,
+            renewable = true,
         } = options ?? {}
 
         let top = new Throttler(() => this.getFinalizedHeight(request), 20_000)
@@ -139,6 +141,7 @@ export class PortalClient {
                 maxWaitTime,
                 request,
                 stopOnHead,
+                renewable,
             },
             async (q, o) => {
                 // NOTE: we emulate the same behavior as will be implemented for hot blocks stream,
@@ -252,6 +255,8 @@ function createReadablePortalStream<Q extends PortalQuery = PortalQuery, B exten
                 } finally {
                     reader?.cancel().catch(() => {})
                 }
+            
+                if (!options.renewable) break
             }
         } catch (err) {
             if (abortSignal.aborted) {
