@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@subsquid/http-client",
+      "comment": "use fetch",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@subsquid/http-client"
+}

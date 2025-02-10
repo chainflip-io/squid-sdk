@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@subsquid/portal-client",
+      "comment": "use fetch",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@subsquid/portal-client"
+}

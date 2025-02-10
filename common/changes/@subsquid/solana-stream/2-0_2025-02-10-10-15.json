@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@subsquid/solana-stream",
+      "comment": "use portal api",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@subsquid/solana-stream"
+}

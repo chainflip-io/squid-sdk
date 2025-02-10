@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@subsquid/data-source",
+      "comment": "init",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@subsquid/data-source"
+}
