@@ -1,11 +1,11 @@
-import {Bytes, Select, Selector, Simplify, Trues} from '@subsquid/util-internal'
+import {Base58, Select, Selector, Simplify, Trues} from '@subsquid/util-internal'
 
 export type BlockHeaderFields = {
-    hash: Bytes
+    hash: Base58
     number: number
     height: number
     parentSlot: number
-    parentHash: Bytes
+    parentHash: Base58
     timestamp: number
 }
 
@@ -16,26 +16,26 @@ export type TransactionFields = {
     transactionIndex: number
     version: 'legacy' | number
     // transaction message
-    accountKeys: Bytes[]
+    accountKeys: Base58[]
     addressTableLookups: AddressTableLookup[]
     numReadonlySignedAccounts: number
     numReadonlyUnsignedAccounts: number
     numRequiredSignatures: number
-    recentBlockhash: Bytes
-    signatures: Bytes[]
+    recentBlockhash: Base58
+    signatures: Base58[]
     // meta fields
     err: null | object
     computeUnitsConsumed: bigint
     fee: bigint
     loadedAddresses: {
-        readonly: Bytes[]
-        writable: Bytes[]
+        readonly: Base58[]
+        writable: Base58[]
     }
     hasDroppedLogMessages: boolean
 }
 
 export type AddressTableLookup = {
-    accountKey: Bytes
+    accountKey: Base58
     readonlyIndexes: number[]
     writableIndexes: number[]
 }
@@ -43,9 +43,9 @@ export type AddressTableLookup = {
 export type InstructionFields = {
     transactionIndex: number
     instructionAddress: number[]
-    programId: Bytes
-    accounts: Bytes[]
-    data: Bytes
+    programId: Base58
+    accounts: Base58[]
+    data: Base58
     // execution result extracted from logs
     computeUnitsConsumed?: bigint
     error?: string
@@ -60,26 +60,26 @@ export type LogMessageFields = {
     transactionIndex: number
     logIndex: number
     instructionAddress: number[]
-    programId: Bytes
+    programId: Base58
     kind: 'log' | 'data' | 'other'
     message: string
 }
 
 export type BalanceFields = {
     transactionIndex: number
-    account: Bytes
+    account: Base58
     pre: bigint
     post: bigint
 }
 
 export type PreTokenBalanceFields = {
     transactionIndex: number
-    account: Bytes
+    account: Base58
 
-    preProgramId?: Bytes
-    preMint: Bytes
+    preProgramId?: Base58
+    preMint: Base58
     preDecimals: number
-    preOwner?: Bytes
+    preOwner?: Base58
     preAmount: bigint
 
     postProgramId?: undefined
@@ -91,7 +91,7 @@ export type PreTokenBalanceFields = {
 
 export type PostTokenBalanceFields = {
     transactionIndex: number
-    account: Bytes
+    account: Base58
 
     preProgramId?: undefined
     preMint?: undefined
@@ -99,32 +99,32 @@ export type PostTokenBalanceFields = {
     preOwner?: undefined
     preAmount?: undefined
 
-    postProgramId?: Bytes
-    postMint: Bytes
+    postProgramId?: Base58
+    postMint: Base58
     postDecimals: number
-    postOwner?: Bytes
+    postOwner?: Base58
     postAmount: bigint
 }
 
 export type PrePostTokenBalanceFields = {
     transactionIndex: number
-    account: Bytes
-    preProgramId?: Bytes
-    preMint: Bytes
+    account: Base58
+    preProgramId?: Base58
+    preMint: Base58
     preDecimals: number
-    preOwner?: Bytes
+    preOwner?: Base58
     preAmount: bigint
-    postProgramId?: Bytes
-    postMint: Bytes
+    postProgramId?: Base58
+    postMint: Base58
     postDecimals: number
-    postOwner?: Bytes
+    postOwner?: Base58
     postAmount: bigint
 }
 
 export type TokenBalanceFields = PreTokenBalanceFields | PostTokenBalanceFields | PrePostTokenBalanceFields
 
 export type RewardFields = {
-    pubkey: Bytes
+    pubkey: Base58
     lamports: bigint
     postBalance: bigint
     rewardType?: string
@@ -189,7 +189,7 @@ export type DataRequest = {
 }
 
 export type TransactionRequest = {
-    feePayer?: Bytes[]
+    feePayer?: Base58[]
 
     instructions?: boolean
     logs?: boolean
@@ -201,22 +201,22 @@ export type TransactionRequest = {
 export type Discriminator = string & {}
 
 export type InstructionRequest = {
-    programId?: Bytes[]
+    programId?: Base58[]
     d1?: Discriminator[]
     d2?: Discriminator[]
     d3?: Discriminator[]
     d4?: Discriminator[]
     d8?: Discriminator[]
-    a0?: Bytes[]
-    a1?: Bytes[]
-    a2?: Bytes[]
-    a3?: Bytes[]
-    a4?: Bytes[]
-    a5?: Bytes[]
-    a6?: Bytes[]
-    a7?: Bytes[]
-    a8?: Bytes[]
-    a9?: Bytes[]
+    a0?: Base58[]
+    a1?: Base58[]
+    a2?: Base58[]
+    a3?: Base58[]
+    a4?: Base58[]
+    a5?: Base58[]
+    a6?: Base58[]
+    a7?: Base58[]
+    a8?: Base58[]
+    a9?: Base58[]
     isCommitted?: boolean
 
     transaction?: boolean
@@ -228,7 +228,7 @@ export type InstructionRequest = {
 }
 
 export type LogRequest = {
-    programId?: Bytes[]
+    programId?: Base58[]
     kind?: LogMessageFields['kind'][]
 
     transaction?: boolean
@@ -236,27 +236,27 @@ export type LogRequest = {
 }
 
 export type BalanceRequest = {
-    account?: Bytes[]
+    account?: Base58[]
 
     transaction?: boolean
     transactionInstructions?: boolean
 }
 
 export type TokenBalanceRequest = {
-    account?: Bytes[]
-    preProgramId?: Bytes[]
-    postProgramId?: Bytes[]
-    preMint?: Bytes[]
-    postMint?: Bytes[]
-    preOwner?: Bytes[]
-    postOwner?: Bytes[]
+    account?: Base58[]
+    preProgramId?: Base58[]
+    postProgramId?: Base58[]
+    preMint?: Base58[]
+    postMint?: Base58[]
+    preOwner?: Base58[]
+    postOwner?: Base58[]
 
     transaction?: boolean
     transactionInstructions?: boolean
 }
 
 export type RewardRequest = {
-    pubkey?: Bytes[]
+    pubkey?: Base58[]
 }
 
 export type FinalizedQuery = Simplify<

@@ -91,8 +91,8 @@ function isSafeInteger(value: unknown): value is number {
 }
 
 
-function isBigNat(value: unknown): value is string {
-    return typeof value == 'string' && /^\d+$/.test(value)
+function isBigNat(value: unknown): value is string | bigint {
+    return typeof value == 'string' && /^\d+$/.test(value) || typeof value == 'bigint'
 }
 
 

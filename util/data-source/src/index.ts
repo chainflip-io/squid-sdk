@@ -5,7 +5,11 @@ export interface BlockRef {
     hash: string
 }
 
-export type DataSourceStreamItem<B> = B & {[DataSource.blockRef]: BlockRef}
+export interface BlockReferenceable {
+    [DataSource.blockRef]: BlockRef
+}
+
+export type DataSourceStreamItem<B> = B & BlockReferenceable
 
 export type DataSourceStreamData<B> = DataSourceStreamItem<B>[] & {
     [DataSource.finalizedHead]?: BlockRef
