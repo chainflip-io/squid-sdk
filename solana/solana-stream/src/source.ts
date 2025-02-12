@@ -1,21 +1,19 @@
-import {applyRangeBound, mergeRangeRequests, Range, RangeRequest} from '@subsquid/util-internal-range'
-import {PortalClient, PortalStreamData} from '@subsquid/portal-client'
+import {DataSource, type DataSourceStream, type DataSourceStreamData} from '@subsquid/data-source'
+import {PortalClient, type PortalClientOptions, type PortalStreamData} from '@subsquid/portal-client'
+import {type MergeSelection, mergeSelection} from '@subsquid/util-internal'
+import {applyRangeBound, mergeRangeRequests, type Range, type RangeRequest} from '@subsquid/util-internal-range'
 import {cast} from '@subsquid/util-internal-validation'
 import {
-    BlockData,
-    DataRequest,
-    SolanaQueryOptions,
-    FieldSelection,
+    type BlockData,
+    type DataRequest,
+    type FieldSelection,
     mergeDataRequests,
-    mergeSelection,
-    Response,
+    type SolanaQueryOptions,
 } from './query'
-import type {MergeSelection} from '@subsquid/util-internal'
-import {DataSource, DataSourceStream, DataSourceStreamData} from '@subsquid/data-source'
 import {getDataSchema} from './schema'
 
 export interface SolanaPortalDataSourceOptions<Q extends SolanaQueryOptions> {
-    portal: string | PortalClient
+    portal: string | PortalClientOptions | PortalClient
     query: Q
 }
 
@@ -29,7 +27,12 @@ export class SolanaPortalDataSource<
     private requests: RangeRequest<DataRequest>[]
 
     constructor(options: SolanaPortalDataSourceOptions<Q>) {
-        this.portal = typeof options.portal === 'string' ? new PortalClient({url: options.portal}) : options.portal
+        this.portal =
+            typeof options.portal === 'string'
+                ? new PortalClient({url: options.portal})
+                : options.portal instanceof PortalClient
+                ? options.portal
+                : new PortalClient(options.portal)
         this.fields = options.query.fields
         this.requests = mergeRangeRequests(options.query.requests, mergeDataRequests)
     }

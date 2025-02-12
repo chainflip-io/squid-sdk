@@ -1,10 +1,8 @@
-import {FieldSelection} from './query'
 import {
     array,
     BYTES,
     NAT,
     object,
-    oneOf,
     option,
     QTY,
     SMALL_QTY,
@@ -14,6 +12,7 @@ import {
     withDefault,
     withSentinel,
 } from '@subsquid/util-internal-validation'
+import {FieldSelection} from './query'
 
 export function getBlockHeaderProps(fields: FieldSelection['block'], forArchive: boolean) {
     let natural = forArchive ? NAT : SMALL_QTY

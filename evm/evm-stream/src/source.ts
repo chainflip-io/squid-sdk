@@ -1,29 +1,20 @@
+import {DataSource, DataSourceStream, DataSourceStreamData} from '@subsquid/data-source'
+import {PortalClient, PortalClientOptions, PortalStreamData} from '@subsquid/portal-client'
+import {mergeSelection, weakMemo} from '@subsquid/util-internal'
 import {applyRangeBound, mergeRangeRequests, Range, RangeRequest} from '@subsquid/util-internal-range'
-import {PortalClient, PortalStreamData} from '@subsquid/portal-client'
-import {weakMemo} from '@subsquid/util-internal'
 import {array, BYTES, cast, NAT, object, STRING, taggedUnion, withDefault} from '@subsquid/util-internal-validation'
+import {BlockData, DataRequest, EvmQueryOptions, FieldSelection, mergeDataRequests, MergeFieldSelection} from './query'
 import {
     getBlockHeaderProps,
-    getTxProps,
-    getTxReceiptProps,
     getLogProps,
     getTraceFrameValidator,
+    getTxProps,
+    getTxReceiptProps,
     project,
 } from './schema'
-import {
-    BlockData,
-    DataRequest,
-    EvmQueryOptions,
-    FieldSelection,
-    mergeDataRequests,
-    MergeFieldSelection,
-    mergeSelection,
-    Response,
-} from './query'
-import {DataSource, DataSourceStream, DataSourceStreamData} from '@subsquid/data-source'
 
 export interface EvmPortalDataSourceOptions<Q extends EvmQueryOptions> {
-    portal: string | PortalClient
+    portal: string | PortalClientOptions | PortalClient
     query: Q
 }
 
@@ -37,7 +28,12 @@ export class EvmPortalDataSource<
     private requests: RangeRequest<DataRequest>[]
 
     constructor(options: EvmPortalDataSourceOptions<Q>) {
-        this.portal = typeof options.portal === 'string' ? new PortalClient({url: options.portal}) : options.portal
+        this.portal =
+            typeof options.portal === 'string'
+                ? new PortalClient({url: options.portal})
+                : options.portal instanceof PortalClient
+                ? options.portal
+                : new PortalClient(options.portal)
         this.fields = options.query.fields
         this.requests = mergeRangeRequests(options.query.requests, mergeDataRequests)
     }

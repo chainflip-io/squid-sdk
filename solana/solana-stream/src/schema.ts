@@ -1,3 +1,4 @@
+import type {Selector} from '@subsquid/util-internal'
 import {weakMemo} from '@subsquid/util-internal'
 import {
     ANY_OBJECT,
@@ -14,8 +15,7 @@ import {
     option,
     STRING,
 } from '@subsquid/util-internal-validation'
-import type {Selector} from '@subsquid/util-internal'
-import {FieldSelection} from './query'
+import type {FieldSelection} from './query'
 
 export function project<T>(fields: Selector<keyof T> | undefined, obj: T): Partial<T> {
     if (fields == null) return {}

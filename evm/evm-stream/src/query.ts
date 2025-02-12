@@ -1,6 +1,6 @@
-import {applyRangeBound, mergeRangeRequests, Range, RangeRequest} from '@subsquid/util-internal-range'
 import type {Evm} from '@subsquid/portal-client'
-import type {MergeSelection, MergeSelectionAll, Selection} from '@subsquid/util-internal'
+import {mergeSelection, type MergeSelection} from '@subsquid/util-internal'
+import {applyRangeBound, mergeRangeRequests, type Range, type RangeRequest} from '@subsquid/util-internal-range'
 
 export * from '@subsquid/portal-client/lib/query/evm'
 
@@ -21,45 +21,35 @@ export class EvmQueryBuilder<F extends Evm.FieldSelection = {block: {number: tru
     private fields: F = {
         block: {number: true, hash: true},
     } as F
-
-    addLog(options: LogRequestOptions): this {
+    private addRequest(type: keyof Evm.DataRequest, options: RequestOptions<any>): this {
         this.requests.push({
             range: options.range ?? {from: 0},
             request: {
-                logs: [mapRequest(options)],
+                [type]: [mapRequest(options)],
             },
         })
         return this
+    }
+
+    includeAllBlocks(range?: Range): this {
+        this.requests.push({range: range ?? {from: 0}, request: {includeAllBlocks: true}})
+        return this
+    }
+
+    addLog(options: LogRequestOptions): this {
+        return this.addRequest('logs', options)
     }
 
     addTransaction(options: TransactionRequestOptions): this {
-        this.requests.push({
-            range: options.range ?? {from: 0},
-            request: {
-                transactions: [mapRequest(options)],
-            },
-        })
-        return this
+        return this.addRequest('transactions', options)
     }
 
     addTrace(options: TraceRequestOptions): this {
-        this.requests.push({
-            range: options.range ?? {from: 0},
-            request: {
-                traces: [mapRequest(options)],
-            },
-        })
-        return this
+        return this.addRequest('traces', options)
     }
 
     addStateDiff(options: StateDiffRequestOptions): this {
-        this.requests.push({
-            range: options.range ?? {from: 0},
-            request: {
-                stateDiffs: [mapRequest(options)],
-            },
-        })
-        return this
+        return this.addRequest('stateDiffs', options)
     }
 
     setRange(range: Range): this {
@@ -151,14 +141,8 @@ let test = mergeQueries(
 )
 
 function concatRequestLists<T extends object>(a?: T[], b?: T[]): T[] | undefined {
-    let result: T[] = []
-    if (a) {
-        result.push(...a)
-    }
-    if (b) {
-        result.push(...b)
-    }
-    return result.length == 0 ? undefined : result
+    let result = [...(a || []), ...(b || [])]
+    return result.length ? result : undefined
 }
 
 function mapRequest<T>(options: RequestOptions<T>): T {
@@ -172,24 +156,4 @@ function mapRequest<T>(options: RequestOptions<T>): T {
         }
     }
     return req
-}
-
-export function mergeSelection<T extends Selection, U extends Selection>(a: T, b: U): MergeSelection<T, U>
-export function mergeSelection<T extends readonly Selection[]>(...selections: T): MergeSelectionAll<T>
-export function mergeSelection<T extends readonly Selection[]>(...selections: T) {
-    let res: Selection = {}
-
-    for (let selection of selections) {
-        for (let key in selection) {
-            if (res[key] == null) {
-                res[key] = selection[key]
-            } else if (res[key] === true || selection[key] === true) {
-                res[key] === true
-            } else if (typeof res[key] === 'object' && typeof selection[key] === 'object') {
-                res[key] = mergeSelection(res[key], selection[key])
-            }
-        }
-    }
-
-    return res
 }
