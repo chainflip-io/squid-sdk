@@ -1,4 +1,8 @@
-import {DataSource, DataSourceStream, DataSourceStreamData} from '@subsquid/data-source'
+import {
+    DataSource,
+    type DataSourceStream,
+    type DataSourceStreamData,
+} from '@subsquid/data-source'
 import {PortalClient, PortalClientOptions, PortalStreamData} from '@subsquid/portal-client'
 import {mergeSelection, weakMemo} from '@subsquid/util-internal'
 import {applyRangeBound, mergeRangeRequests, Range, RangeRequest} from '@subsquid/util-internal-range'

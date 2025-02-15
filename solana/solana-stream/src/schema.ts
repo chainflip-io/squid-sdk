@@ -14,8 +14,9 @@ import {
     oneOf,
     option,
     STRING,
+    withDefault,
 } from '@subsquid/util-internal-validation'
-import type {FieldSelection} from './query'
+import {FieldSelection} from './objects'
 
 export function project<T>(fields: Selector<keyof T> | undefined, obj: T): Partial<T> {
     if (fields == null) return {}
@@ -145,7 +146,7 @@ export const getDataSchema = weakMemo((fields: FieldSelection) => {
 
     return object({
         header: BlockHeader,
-        transactions: option(array(Transaction)),
+        transactions: withDefault([], array(Transaction)),
         instructions: option(array(Instruction)),
         logs: option(array(LogMessage)),
         balances: option(array(Balance)),

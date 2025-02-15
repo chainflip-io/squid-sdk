@@ -1,8 +1,17 @@
 import type {Solana} from '@subsquid/portal-client'
-import {mergeSelection, type MergeSelection} from '@subsquid/util-internal'
+import {Bytes, mergeSelection, Simplify, Trues, type MergeSelection} from '@subsquid/util-internal'
 import {applyRangeBound, mergeRangeRequests, type Range, type RangeRequest} from '@subsquid/util-internal-range'
 
-export * from '@subsquid/portal-client/lib/query/solana'
+// TODO: is it needed?
+export {
+    DataRequest,
+    TransactionRequest,
+    InstructionRequest,
+    LogRequest,
+    BalanceRequest,
+    TokenBalanceRequest,
+    RewardRequest,
+} from '@subsquid/portal-client/lib/query/solana'
 
 export type RequestOptions<R> = {range?: Range; request: R}
 export type LogRequestOptions = RequestOptions<Solana.LogRequest>
@@ -136,3 +145,5 @@ function concatRequestLists<T extends object>(a?: T[], b?: T[]): T[] | undefined
 function mapRequest<T>(options: RequestOptions<T>): T {
     return {...options.request}
 }
+
+

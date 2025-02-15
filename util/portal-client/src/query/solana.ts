@@ -160,7 +160,7 @@ export type Balance<F extends BalanceFieldSelection = Trues<BalanceFieldSelectio
 
 export type TokenBalanceFieldSelection = Selector<keyof TokenBalanceFields>
 export type TokenBalance<F extends TokenBalanceFieldSelection = Trues<TokenBalanceFieldSelection>> = Select<
-    TokenBalanceFields,
+    {[K in keyof TokenBalanceFields]: TokenBalanceFields[K]},
     F
 >
 
@@ -178,7 +178,6 @@ export type FieldSelection = {
 }
 
 export type DataRequest = {
-    fields?: FieldSelection
     includeAllBlocks?: boolean
     transactions?: TransactionRequest[]
     instructions?: InstructionRequest[]

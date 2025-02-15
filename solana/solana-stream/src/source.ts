@@ -1,16 +1,19 @@
 import {DataSource, type DataSourceStream, type DataSourceStreamData} from '@subsquid/data-source'
 import {PortalClient, type PortalClientOptions, type PortalStreamData} from '@subsquid/portal-client'
 import {type MergeSelection, mergeSelection} from '@subsquid/util-internal'
-import {applyRangeBound, mergeRangeRequests, type Range, type RangeRequest} from '@subsquid/util-internal-range'
+import {applyRangeBound, mergeRangeRequests, type RangeRequest, type Range} from '@subsquid/util-internal-range'
 import {cast} from '@subsquid/util-internal-validation'
 import {
-    type BlockData,
-    type DataRequest,
+    type Block,
+    blockFromPartial,
+    BlockPartial,
     type FieldSelection,
-    mergeDataRequests,
-    type SolanaQueryOptions,
-} from './query'
+    type ReqiredFieldSelection,
+    REQUIRED_FIELDS,
+} from './objects'
 import {getDataSchema} from './schema'
+import {setUpRelations} from './objects/relations'
+import {type DataRequest, mergeDataRequests, type SolanaQueryOptions} from './query'
 
 export interface SolanaPortalDataSourceOptions<Q extends SolanaQueryOptions> {
     portal: string | PortalClientOptions | PortalClient
@@ -19,7 +22,7 @@ export interface SolanaPortalDataSourceOptions<Q extends SolanaQueryOptions> {
 
 export class SolanaPortalDataSource<
     Q extends SolanaQueryOptions,
-    B extends BlockData<GetFields<Q['fields']>> = BlockData<GetFields<Q['fields']>>
+    B extends Block<GetFields<Q['fields']>> = Block<GetFields<Q['fields']>>
 > implements DataSource<B>
 {
     private portal: PortalClient
@@ -49,26 +52,25 @@ export class SolanaPortalDataSource<
         let fields = getFields(this.fields)
         let requests = applyRangeBound(this.requests, range)
 
-        let {writable, readable} = new TransformStream<
-            PortalStreamData<BlockData<typeof fields>>,
-            DataSourceStreamData<B>
-        >({
-            transform: async (data, controller) => {
-                let blocks = data.map((b) => {
-                    let block = mapBlock(b, fields)
-                    Object.defineProperty(block, DataSource.blockRef, {
-                        value: {hash: block.header.hash, number: block.header.number},
+        let {writable, readable} = new TransformStream<PortalStreamData<Block<typeof fields>>, DataSourceStreamData<B>>(
+            {
+                transform: async (data, controller) => {
+                    let blocks = data.map((b) => {
+                        let block = mapBlock(b, fields)
+                        Object.defineProperty(block, DataSource.blockRef, {
+                            value: {hash: block.header.hash, number: block.header.number},
+                        })
+                        return block
                     })
-                    return block
-                })
 
-                Object.defineProperty(blocks, DataSource.finalizedHead, {
-                    value: data[PortalClient.finalizedHead],
-                })
+                    Object.defineProperty(blocks, DataSource.finalizedHead, {
+                        value: data[PortalClient.finalizedHead],
+                    })
 
-                controller.enqueue(blocks as DataSourceStreamData<B>)
-            },
-        })
+                    controller.enqueue(blocks as DataSourceStreamData<B>)
+                },
+            }
+        )
 
         const ingest = async () => {
             for (let request of requests) {
@@ -97,14 +99,14 @@ export class SolanaPortalDataSource<
     }
 }
 
-export function mapBlock<F extends FieldSelection, B extends BlockData<F> = BlockData<F>>(
-    rawBlock: unknown,
-    fields: F
-): B {
+export function mapBlock<F extends ReqiredFieldSelection>(rawBlock: unknown, fields: ReqiredFieldSelection): Block<F> {
     let validator = getDataSchema(fields)
-    let block = cast(validator, rawBlock)
+    // FIXME: cast return type is broken?
+    let partial = cast(validator, rawBlock) as BlockPartial<F>
+    let block = blockFromPartial(partial)
+    setUpRelations(block)
 
-    return block as unknown as B
+    return block as unknown as Block<F>
 }
 
 function getFields<T extends FieldSelection>(fields: T): GetFields<T> {
@@ -112,13 +114,3 @@ function getFields<T extends FieldSelection>(fields: T): GetFields<T> {
 }
 
 type GetFields<F extends FieldSelection> = MergeSelection<ReqiredFieldSelection, F>
-
-type ReqiredFieldSelection = typeof REQUIRED_FIELDS
-
-const REQUIRED_FIELDS = {
-    block: {
-        number: true,
-        hash: true,
-        parentHash: true,
-    },
-} as const satisfies FieldSelection

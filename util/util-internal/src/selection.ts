@@ -4,13 +4,11 @@ export type Selector<Props extends string | number | symbol = string> = {
     [P in Props]?: boolean
 }
 
-export type Select<T, S> = T extends any
-    ? S extends never
-        ? never
-        : Simplify<{
-              [K in Extract<keyof T, keyof S> as S[K] extends true ? K : never]: T[K]
-          }>
-    : never
+export type Select<T, S> = S extends never
+    ? never
+    : Simplify<{
+          [K in keyof T as K extends keyof S ? (S[K] extends true ? K : never) : never]: T[K]
+      }>
 
 export type Selection = {
     [P in string]?: boolean | Selection
@@ -55,7 +53,9 @@ export type MergeSelectionAll<T extends readonly Selection[]> = T extends readon
         : never
     : never
 
-export type Trues<T extends Selection> = Simplify<{[K in keyof T]-?: T[K] extends Selection ? Trues<T[K]> : true}>
+export type Trues<T extends Selection> = Simplify<{
+    [K in keyof T]-?: [T[K] & {}] extends [Selection] ? Trues<T[K] & {}> : true
+}>
 
 export function mergeSelection<T extends Selection, U extends Selection>(a: T, b: U): MergeSelection<T, U>
 export function mergeSelection<T extends readonly Selection[]>(...selections: T): MergeSelectionAll<T>
