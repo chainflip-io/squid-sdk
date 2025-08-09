@@ -8,7 +8,7 @@ const portalUrls = {
 const queries = {
     evm: createQuery({
         type: 'evm',
-        fromBlock: 23_000_000,
+        fromBlock: 23_100_000,
         fields: {
             block: {
                 number: true,
@@ -91,47 +91,26 @@ async function main() {
         }
 
         try {
-            for await (let {blocks, finalizedHead} of portal.getStream(query)) {
+            for await (let {blocks, finalizedHead} of portal.getStream(currentQuery)) {
                 if (head && blocks.length > 0 && head.number >= blocks[0].header.number) {
                     throw new Error('Data is not continuous')
                 }
 
                 if (finalizedHead) {
-                    // if we do have finality information from the portal
+                    // if we do have finality information from the portal,
+                    // then we first mark all new blocks as not final
+                    hotHeads.push(...blocks.map(b => ({number: b.header.number, hash: b.header.hash})))
+                    // before cutting off any known final ones
+                    if (hotHeads.length !== 0) {
+                        const lowestNonFinalBlockIndex = hotHeads.findIndex((h) => h.number > finalizedHead.number)
+                        const highestFinalBlockIndex = lowestNonFinalBlockIndex === -1 ? hotHeads.length-1 : lowestNonFinalBlockIndex-1
 
-                    const unfinalizedIndex = blocks.findIndex((b) => b.header.number > finalizedHead?.number)
-                    // all new blocks are finalized
-                    if (unfinalizedIndex < 0) {
-                        const finalizedRef = blocks[blocks.length - 1].header
-                        coldHead = {number: finalizedRef.number, hash: finalizedRef.hash}
-                        // finalize all hot heads
-                        hotHeads = []
-                    } else {
-                        coldHead = finalizedHead
-
-                        // finalize all hot heads that are older than the cold head
-                        let finalizeIndex = hotHeads.findIndex((h) => h.number > coldHead!.number)
-                        hotHeads = finalizeIndex < 0 ? [] : hotHeads.slice(finalizeIndex)
-
-                        // process unfinalized blocks
-                        for (let i = unfinalizedIndex; i < blocks.length; i++) {
-                            hotHeads.push({number: blocks[i].header.number, hash: blocks[i].header.hash})
-                        }
+                        coldHead = hotHeads[highestFinalBlockIndex] ?? coldHead
+                        hotHeads = hotHeads.slice(highestFinalBlockIndex+1)
                     }
-
                 } else {
                     // if the chunk came in without any finality information from the portal
-
-                    // very unlikely to ever make any changes, conditions:
-                    // finality information from portal should be available then cease at some point +
-                    // we should receive a batch of blocks partially under the old cold head
-                    if (coldHead) {
-                        let finalizeIndex = hotHeads.findIndex((h) => h.number > coldHead!.number)
-                        hotHeads = finalizeIndex < 0 ? [] : hotHeads.slice(finalizeIndex)
-                    }
-
-                    // accumulating blockrefs if portal didn't sent any finality info
-                    // probably the only thing we'll do here
+                    // then we just save all block references
                     for (let i = 0; i < blocks.length; i++) {
                         hotHeads.push({number: blocks[i].header.number, hash: blocks[i].header.hash})
                     }
