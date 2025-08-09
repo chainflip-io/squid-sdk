@@ -96,29 +96,43 @@ async function main() {
                     throw new Error('Data is not continuous')
                 }
 
-                let unfinalizedIndex = 0
                 if (finalizedHead) {
-                    unfinalizedIndex = blocks.findIndex((b) => b.header.number > finalizedHead?.number)
-                }
+                    // if we do have finality information from the portal
 
-                // all new blocks are finalized
-                if (unfinalizedIndex < 0) {
-                    const finalizedRef = blocks[blocks.length - 1].header
-                    coldHead = {number: finalizedRef.number, hash: finalizedRef.hash}
-                    // finalize all hot heads
-                    hotHeads = []
+                    const unfinalizedIndex = blocks.findIndex((b) => b.header.number > finalizedHead?.number)
+                    // all new blocks are finalized
+                    if (unfinalizedIndex < 0) {
+                        const finalizedRef = blocks[blocks.length - 1].header
+                        coldHead = {number: finalizedRef.number, hash: finalizedRef.hash}
+                        // finalize all hot heads
+                        hotHeads = []
+                    } else {
+                        coldHead = finalizedHead
+
+                        // finalize all hot heads that are older than the cold head
+                        let finalizeIndex = hotHeads.findIndex((h) => h.number > coldHead!.number)
+                        hotHeads = finalizeIndex < 0 ? [] : hotHeads.slice(finalizeIndex)
+
+                        // process unfinalized blocks
+                        for (let i = unfinalizedIndex; i < blocks.length; i++) {
+                            hotHeads.push({number: blocks[i].header.number, hash: blocks[i].header.hash})
+                        }
+                    }
+
                 } else {
-                    const finalizedRef = finalizedHead ?? blocks[unfinalizedIndex - 1]?.header
-                    coldHead = finalizedRef ?? coldHead
+                    // if the chunk came in without any finality information from the portal
 
-                    // finalize all hot heads that are older than the cold head
+                    // very unlikely to ever make any changes, conditions:
+                    // finality information from portal should be available then cease at some point +
+                    // we should receive a batch of blocks partially under the old cold head
                     if (coldHead) {
                         let finalizeIndex = hotHeads.findIndex((h) => h.number > coldHead!.number)
                         hotHeads = finalizeIndex < 0 ? [] : hotHeads.slice(finalizeIndex)
                     }
 
-                    // process unfinalized blocks
-                    for (let i = unfinalizedIndex; i < blocks.length; i++) {
+                    // accumulating blockrefs if portal didn't sent any finality info
+                    // probably the only thing we'll do here
+                    for (let i = 0; i < blocks.length; i++) {
                         hotHeads.push({number: blocks[i].header.number, hash: blocks[i].header.hash})
                     }
                 }
