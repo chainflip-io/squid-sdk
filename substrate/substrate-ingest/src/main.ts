@@ -28,6 +28,11 @@ runProgram(async () => {
     program.option('--out <sink>', 'Name of a file or postgres connection string')
     program.option('--start-block <number>', 'Height of the block from which to start processing', positiveInteger)
     program.option(
+        "--finalized-blocks <boolean>",
+        "Whether to ingest finalized blocks only. Defaults to true. If false, ingests best blocks.",
+        booleanParser
+    );
+    program.option(
         '--write-batch-size <number>',
         'A number of blocks to write in one transaction (applies only to postgres sink)',
         positiveInteger
@@ -46,7 +51,8 @@ runProgram(async () => {
         format?: string
         startBlock?: number
         writeBatchSize?: number,
-        promPort?: number
+        promPort?: number,
+        finalizedBlocks?: boolean
     }
 
     let capacities = (options.endpointCapacity || []).map(s => {
@@ -167,8 +173,9 @@ runProgram(async () => {
         client,
         typesBundle,
         startBlock,
-        log
-    })
+        log,
+        finalizedBlocks: options.finalizedBlocks,
+    });
 
     for await (let block of blocks) {
         await sink.write(block)
@@ -192,6 +199,11 @@ function positiveInteger(s: string): number {
     return n
 }
 
+function booleanParser(s: string): boolean {
+    if (s.toLowerCase() === 'true') return true;
+    if (s.toLowerCase() === 'false') return false;
+    throw new Error(`Invalid boolean string: ${s}`);
+}
 
 function every(ms: number, cb: () => void): void {
     setTimeout(() => {

@@ -33,6 +33,7 @@ export interface IngestOptions {
     typesBundle?: OldTypesBundle | OldSpecsBundle
     startBlock?: number
     log?: Logger
+    finalizedBlocks?: boolean
 }
 
 
@@ -53,6 +54,7 @@ export class Ingest {
     private specs = this.createSpecsShooter()
     private validators = this.createValidatorsShooter()
     private firstBlock = true
+    private finalizedBlocks: boolean
 
     private constructor(options: IngestOptions) {
         this.client = options.client
@@ -64,6 +66,7 @@ export class Ingest {
             this.stridesHead = 0
         }
         this.log = options.log
+        this.finalizedBlocks = options.finalizedBlocks ?? true
     }
 
     private async *loop(): AsyncGenerator<BlockData> {
@@ -288,7 +291,9 @@ export class Ingest {
     }
 
     private async getChainHeight(): Promise<number> {
-        let hash = await this.client.call('chain_getFinalizedHead')
+        let hash = this.finalizedBlocks
+            ? await this.client.call('chain_getFinalizedHead')
+            : await this.client.call('chain_getHead');
         return this.client.call<sub.BlockHeader>('chain_getHeader', [hash])
             .then(header => {
                 let height = parseInt(header.number)
