@@ -1,0 +1,46 @@
+name: Build and push only the substrate-ingest image
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Docker image tag'
+        required: false
+        default: 'latest'
+      branch:
+        description: 'Git branch to build from'
+        required: true
+        default: 'release/firesquid'
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: substrate-ingest
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout selected branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.branch }}
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push substrate-ingest
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          target: substrate-ingest
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ github.repository }}/${{ env.IMAGE_NAME }}:${{ github.event.inputs.tag }}
