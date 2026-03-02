@@ -44,6 +44,11 @@ RUN node common/scripts/install-run-rush.js deploy --project @subsquid/substrate
 
 FROM node AS substrate-ingest
 COPY --from=substrate-ingest-builder /squid/common/deploy /squid
+
+# Fix for new AWS RDS SSL Certs
+RUN mkdir /ca-certs
+RUN wget -q -O /ca-certs/rds.pem https://truststore.pki.rds.amazonaws.com/eu-central-1/eu-central-1-bundle.pem
+
 ENTRYPOINT ["node", "/squid/substrate/substrate-ingest/bin/run.js"]
 
 
