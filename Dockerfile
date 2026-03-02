@@ -16,8 +16,12 @@ RUN node common/scripts/install-run-rush.js deploy --project @subsquid/substrate
 
 FROM node AS substrate-ingest
 COPY --from=substrate-ingest-builder /squid/common/deploy /squid
+RUN mkdir /ca-certs && wget -q -O /ca-certs/rds.pem https://truststore.pki.rds.amazonaws.com/eu-central-1/eu-central-1-bundle.pem
+
+# Fix for new AWS RDS SSL Certs
 WORKDIR /squid/substrate-ingest
 EXPOSE 9090
+
 ENTRYPOINT ["node", "/squid/substrate/substrate-ingest/bin/run.js", "--prom-port", "9090"]
 
 
