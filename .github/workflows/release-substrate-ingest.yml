@@ -8,7 +8,7 @@ on:
                 required: false
                 default: "latest"
             branch:
-                description: "Git branch to build from"
+                description: "Git branch to build from (NOTE: Unless this is for development, always use the release/firesquid branch)"
                 required: true
                 default: "release/firesquid"
 
