@@ -1,4 +1,14 @@
-# Squid SDK - an ETL framework for Web3 data
+# Squid SDK - CHAINFLIP FORK: READ THIS BEFORE MAKING ANY CHANGES
+
+This is a Chainflip-specific fork of the
+
+The Chainflip-specific *functional* changes are in the `release/firesquid` branch.
+
+The Github action is defined in the `master` branch.
+
+When building a new image, make sure to use the Github action in the `master` branch, and build from the `release/firesquid` branch.
+
+---
 
 The Squid SDK is a set of tools to ingest, transform and present blockchain data.
 
@@ -6,7 +16,7 @@ The SDK currently supports indexing of EVM- and [Substrate](https://substrate.io
 
 ## Getting started
 
-The best way to get started is to install [squid CLI](https://github.com/subsquid/squid-cli) and scaffold a squid project with [`sqd init`](https://docs.subsquid.io/squid-cli/init/). 
+The best way to get started is to install [squid CLI](https://github.com/subsquid/squid-cli) and scaffold a squid project with [`sqd init`](https://docs.subsquid.io/squid-cli/init/).
 
 For step-by-step instructions, follow one of the [Quickstart guides](https://docs.subsquid.io/quickstart/).
 
@@ -21,13 +31,13 @@ The Squid SDK consists of several key components.
 ### Typegen tools
 
 [squid-substrate-typegen(1)](substrate/substrate-typegen) generates facade TypeScript classes
-for type-safe decoding substrate events, calls and RPC storage queries. It natively supports Substrate runtime upgrades by inspecting the historical metadata changes and generating runtime version-aware data access methods. 
+for type-safe decoding substrate events, calls and RPC storage queries. It natively supports Substrate runtime upgrades by inspecting the historical metadata changes and generating runtime version-aware data access methods.
 
 Similarly, [squid-evm-typegen(1)](evm/evm-typegen) generates facade TypeScript classes for type-safe decoding of EVM event logs, transaction data and RPC contract state responses.  
 
 ### Postgres
 
-Both `evm-processor` and `substrate-processor` are designed to be able to load the processed data into an arbitrary database and indeed one can run it without a persistent store. 
+Both `evm-processor` and `substrate-processor` are designed to be able to load the processed data into an arbitrary database and indeed one can run it without a persistent store.
 
 Extra tooling for data modeling and serving the data with GraphQL is available when a processor is run against a postgres-compatible database. In such a case, the Subsquid framework suggests the following dev flow:
 
@@ -51,10 +61,10 @@ The Subsquid framework incorporates a few npm packages that might be useful in a
 
 An Archive is a specialized data lake optimized for batch access to the historical event and transaction data. Archives are the primary data sources for squid projects developed with the Squid SDK. Currently, public Archives are maintained by the Subsquid Labs GmbH and will be replaced by a decentralized solution in the future.
 
-- For EVM chains, see a [separate `eth-archive` repo](https://github.com/subsquid/eth-archive). For a list of public EVM archive endpoints, see the 
+* For EVM chains, see a [separate `eth-archive` repo](https://github.com/subsquid/eth-archive). For a list of public EVM archive endpoints, see the
 [docs](https://docs.subsquid.io/develop-a-squid/evm-processor/configuration/).
 
-- For Substrate chains, the archive service is formed by [`substrate-ingest`](substrate/substrate-ingest),
+* For Substrate chains, the archive service is formed by [`substrate-ingest`](substrate/substrate-ingest),
 [`substrate-gateway`](https://github.com/subsquid/substrate-gateway), postgres compatible database
 and optionally [`substrate-explorer`](substrate/substrate-explorer), which together
 
@@ -64,7 +74,7 @@ and optionally [`substrate-explorer`](substrate/substrate-explorer), which toget
 
 For a list of public Substrate archives, see [the Aquarium page](https://app.subsquid.io/archives).
 
-Compared to data access using a conventional chain node RPC, an archive allows one to access data in a more granular fashion and from multiple blocks at once. 
+Compared to data access using a conventional chain node RPC, an archive allows one to access data in a more granular fashion and from multiple blocks at once.
 
 ## Developer community
 
