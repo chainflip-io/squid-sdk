@@ -1,6 +1,6 @@
 # Squid SDK - CHAINFLIP FORK: READ THIS BEFORE MAKING ANY CHANGES
 
-This is a Chainflip-specific fork of the
+This is a Chainflip-specific fork of the Subquid SDK repo.
 
 The Chainflip-specific *functional* changes are in the `release/firesquid` branch.
 
