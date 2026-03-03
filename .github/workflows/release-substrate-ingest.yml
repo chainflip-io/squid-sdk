@@ -3,10 +3,6 @@ name: Build and push only the substrate-ingest image
 on:
     workflow_dispatch:
         inputs:
-            tag:
-                description: "Docker image tag"
-                required: false
-                default: "latest"
             branch:
                 description: "Git branch to build from (NOTE: Unless this is for development, always use the release/firesquid branch)"
                 required: true
@@ -49,5 +45,4 @@ jobs:
                   target: substrate-ingest
                   platforms: linux/amd64,linux/arm64
                   push: true
-                  tags: |
-                      ${{ env.REGISTRY }}/${{ github.repository }}/${{ env.IMAGE_NAME }}:${{ github.event.inputs.tag }}
+                  tags: ${{ env.REGISTRY }}/${{ github.repository }}/${{ env.IMAGE_NAME }}
